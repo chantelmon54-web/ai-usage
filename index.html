@@ -1,0 +1,258 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>AI 사용량 현황판</title>
+<!--
+  AI 사용량 현황판 — 정적 페이지 한 장 (PLAN.md §5-5 D8)
+  - 숫자는 Apps Script 웹앱의 ?format=json 에서 **쿠키 없이** 받아 온다.
+    ★사람이 script.google.com 을 직접 열면 구글 다계정 브라우저에서 /u/N/ 으로 돌려져
+      404 가 난다(원인 = 브라우저가 실어 보내는 구글 쿠키). 구글 밖 페이지가
+      credentials:'omit' 으로 부르면 계정 수와 무관하게 열린다(2026-09-19 실측).
+  - 외부 라이브러리 0, 비밀값 0. 공개 JSON 에는 이메일이 없다(Code.gs 화이트리스트).
+  - 모양·색 단계(70/90)·다크 토글은 Code.gs 의 renderPage_ 와 같다.
+  - 페이지 디자인을 고칠 때만 다시 올린다. 숫자는 저절로 바뀐다.
+-->
+<style>
+body{--hub-bg:#e9dfcd;--hub-surface:#faefe0;--hub-surface-2:#f1e5d6;--hub-surface-3:#e5d9c4;
+--hub-border:#d1c9be;--hub-border-strong:#b9aea1;--hub-text:#2f2a27;--hub-strong:#1f1c1a;
+--hub-muted:#6d645d;--hub-muted-2:#9b8e82;--hub-accent:#3f756f;
+--hub-good:#4c8752;--hub-good-ink:#376940;--hub-good-soft:#e4ecdd;
+--hub-decor:#b85c38;
+--hub-bad:#c74e40;--hub-bad-ink:#993228;--hub-bad-soft:#f3ddd7;
+--hub-warn:#deaf32;--hub-warn-ink:#826012;--hub-warn-soft:#f4e9cf;
+--hub-shadow:0 1px 2px rgba(36,29,25,.08),0 8px 24px rgba(36,29,25,.12);
+color-scheme:light;margin:0;padding:16px 14px 18px;
+background:var(--hub-bg);color:var(--hub-text);
+font-family:'Malgun Gothic',sans-serif;font-size:14px;line-height:1.5;
+-webkit-font-smoothing:antialiased}
+body.dark{color-scheme:dark;font-weight:500;
+--hub-bg:#1d2021;--hub-surface:#282828;--hub-surface-2:#2f3231;--hub-surface-3:#373a39;
+--hub-border:#3b3f3e;--hub-border-strong:#4a4f4d;--hub-text:#ebdbb2;--hub-strong:#fbf1c7;
+--hub-muted:#d5c4a1;--hub-muted-2:#bdae93;--hub-accent:#83a598;
+--hub-good:#7db57d;--hub-good-ink:#9dc690;--hub-good-soft:#7db57d22;
+--hub-decor:#e08a5b;
+--hub-bad:#e25c49;--hub-bad-ink:#ee7c6b;--hub-bad-soft:#e25c4922;
+--hub-warn:#e6b749;--hub-warn-ink:#ebbe59;--hub-warn-soft:#e6b74922;
+--hub-shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.2)}
+*{box-sizing:border-box}
+.wrap{max-width:1120px;margin:0 auto}
+.groups{display:grid;gap:0 22px}
+@media(min-width:840px){.groups{grid-template-columns:1fr 1fr;align-items:start}}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
+h1{font-size:18px;margin:0 0 3px;color:var(--hub-strong);letter-spacing:-.01em}
+.meta{color:var(--hub-muted);font-size:12.5px}
+.lag{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;padding:1px 7px;
+border-radius:99px;border:1px solid var(--hub-warn);color:var(--hub-warn-ink);
+background:var(--hub-warn-soft)}
+.fail{margin-top:3px;color:var(--hub-bad-ink);font-size:12px}
+.tbtn{flex:0 0 auto;cursor:pointer;font:inherit;font-size:12.5px;padding:6px 12px;
+border-radius:8px;border:1px solid var(--hub-border-strong);
+background:var(--hub-surface);color:var(--hub-muted)}
+.tbtn:hover{background:var(--hub-surface-2);color:var(--hub-text)}
+.grp{margin-bottom:18px}
+.grp>h2{display:flex;align-items:center;gap:9px;margin:0 0 10px;
+font-size:16px;font-weight:700;color:var(--hub-strong);letter-spacing:-.01em}
+.grp>h2 .bar{flex:0 0 auto;width:4px;height:17px;border-radius:2px;
+background:var(--hub-accent)}
+.grp>h2 .who{flex:0 0 auto}
+.grp>h2 .rule{flex:1 1 auto;height:1px;background:var(--hub-border)}
+.grp>h2 .cnt{flex:0 0 auto;font-size:11.5px;font-weight:600;color:var(--hub-muted);
+padding:2px 8px;border:1px solid var(--hub-border);border-radius:99px}
+.card{background:var(--hub-surface);border:1px solid var(--hub-border);border-radius:10px;
+padding:12px 14px;margin-bottom:8px;box-shadow:var(--hub-shadow)}
+.ct{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;
+padding-bottom:8px;border-bottom:1px solid var(--hub-border)}
+.ct b{font-size:14.5px;color:var(--hub-strong)}
+.ct span{color:var(--hub-muted);font-size:12px}
+.row{margin:7px 0}
+.rl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+font-size:13px;margin-bottom:4px}
+.rl .nm{color:var(--hub-text)}
+.rl .r{color:var(--hub-muted-2);font-size:11.5px}
+.pct{font-variant-numeric:tabular-nums;font-weight:700;font-size:13.5px}
+.bar{height:10px;background:var(--hub-surface-3);border-radius:99px;overflow:hidden;
+border:1px solid var(--hub-border)}
+.tag{display:inline-block;min-width:34px;text-align:center;font-size:11px;font-weight:700;
+padding:1px 7px;border-radius:99px;border:1px solid;margin-right:6px;vertical-align:1px}
+.ok .tag{color:var(--hub-good-ink);border-color:var(--hub-good);
+background:var(--hub-good-soft)}
+.mid .tag{color:var(--hub-warn-ink);border-color:var(--hub-warn);
+background:var(--hub-warn-soft)}
+.crit .tag{color:var(--hub-bad-ink);border-color:var(--hub-bad);
+background:var(--hub-bad-soft)}
+.bar i{display:block;height:100%;border-radius:99px}
+.ok .bar i{background:var(--hub-good)}.ok .pct{color:var(--hub-good-ink)}
+.mid .bar i{background:var(--hub-warn)}.mid .pct{color:var(--hub-warn-ink)}
+.crit .bar i{background:var(--hub-bad)}.crit .pct{color:var(--hub-bad-ink)}
+.err{color:var(--hub-bad-ink);font-size:12.5px}
+.stale{color:var(--hub-warn-ink);font-size:11.5px;margin:-2px 0 8px}
+.empty{color:var(--hub-muted);font-size:13px}
+footer{color:var(--hub-muted-2);font-size:11.5px;text-align:center;margin-top:16px}
+@media(max-width:420px){.rl{flex-wrap:wrap}.rl .r{width:100%;text-align:right}}
+</style>
+</head>
+<body>
+<script>
+// body 가 열리자마자 저장된 테마를 입힌다(깜빡임 방지).
+(function(){try{if(localStorage.getItem('aiUsageTheme')==='dark'){document.body.className='dark';}}catch(e){}})();
+</script>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>AI 사용량 현황판</h1>
+      <div class="meta" id="meta">불러오는 중…</div>
+      <div class="fail" id="fail" hidden></div>
+    </div>
+    <button id="tbtn" class="tbtn" type="button" onclick="tg()">다크</button>
+  </div>
+  <div id="groups"></div>
+  <footer>구독 한도 사용률입니다. 조회 자체는 사용량을 늘리지 않습니다.</footer>
+</div>
+<script>
+// ── 설정 ─────────────────────────────────────────────────────────────
+var DATA_URL = 'https://script.google.com/macros/s/AKfycbwZJh7CGtCfvuZ__rcN0M-kcAAm8KPC8mXM_uGg60fg8uzuKbvl9AgZfslV7BhM8KQTjg/exec?format=json';
+var POLL_MS = 30000;          // 탭이 보일 때만 이 간격으로 다시 받는다
+var LAG_MINUTES = 6;          // 기준이 이보다 낡으면 「수집 지연」(수집은 2분 주기)
+var PROBE_URL = 'http://127.0.0.1:8765/report';   // ?probe=1 일 때만(다계정 자동 판정용)
+
+var last = null;              // 마지막으로 받은 값 — 실패해도 지우지 않는다
+var failed = false;
+var inflight = false;
+var firstDone = false;
+var timer = null;
+
+function esc(s) {
+  return String(s === null || s === undefined ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+/** 색만으로 구분하지 않는다. 단계는 3개, 글자 배지를 같이 붙인다. */
+function tone(p) { return p >= 90 ? 'crit' : (p >= 70 ? 'mid' : 'ok'); }
+function toneLabel(t) { return t === 'crit' ? '한도' : (t === 'mid' ? '주의' : '여유'); }
+function shortTime(s) { return s ? String(s).replace('T', ' ').slice(5, 16) : ''; }
+
+function ageMinutes(iso) {
+  var t = Date.parse(iso);
+  return isNaN(t) ? null : Math.max(0, Math.floor((Date.now() - t) / 60000));
+}
+
+function renderMeta() {
+  var meta = document.getElementById('meta');
+  var fail = document.getElementById('fail');
+  if (last && last.fetched_at) {
+    var age = ageMinutes(last.fetched_at);
+    var html = '기준 ' + esc(String(last.fetched_at).slice(11, 16)) +
+               (age === null ? '' : ' · ' + age + '분 전');
+    if (age !== null && age > LAG_MINUTES) html += '<span class="lag">수집 지연</span>';
+    meta.innerHTML = html;
+  } else if (last) {
+    meta.textContent = '아직 수집된 값이 없습니다. 운영 PC 수집기가 한 번 보내면 표시됩니다.';
+  }
+  if (failed) {
+    fail.textContent = last ? '갱신 실패 — 마지막 값 표시 중' : '갱신 실패 — 30초 뒤 다시 시도합니다';
+    fail.hidden = false;
+  } else {
+    fail.hidden = true;
+  }
+}
+
+function renderGroups() {
+  if (!last) return;
+  var out = ['<div class="groups">'];
+  ['telmon0001', 'dombom4483'].forEach(function (owner) {
+    var cards = (last.slots || []).filter(function (s) { return s.owner === owner; });
+    if (!cards.length) return;
+    out.push('<div class="grp"><h2><span class="bar"></span>' +
+             '<span class="who">' + esc(owner) + '</span>' +
+             '<span class="rule"></span>' +
+             '<span class="cnt">' + cards.length + '개</span></h2>');
+    cards.forEach(function (s) {
+      out.push('<div class="card"><div class="ct"><b>' + esc(s.tool_name) + '</b>');
+      out.push('<span>' + esc(s.plan || '') + '</span></div>');
+      if (!s.ok && !s.stale) {
+        out.push('<div class="err">조회 실패 — ' + esc(s.error) + '</div>');
+      } else {
+        if (s.stale) {
+          out.push('<div class="stale">' + (s.stale_minutes || 0) +
+                   '분 전 값입니다 (지금 조회는 실패)</div>');
+        }
+        (s.limits || []).forEach(function (l) {
+          var p = Number(l.percent) || 0;
+          out.push('<div class="row ' + tone(p) + '">');
+          out.push('<div class="rl"><span class="nm">' + esc(l.name) + '</span>');
+          out.push('<span><span class="tag">' + toneLabel(tone(p)) + '</span>' +
+                   '<span class="pct">' + p + '%</span>' +
+                   (l.resets_at ? ' <span class="r">리셋 ' + esc(shortTime(l.resets_at)) + '</span>' : '') +
+                   '</span></div>');
+          out.push('<div class="bar"><i style="width:' + Math.min(p, 100) + '%"></i></div>');
+          out.push('</div>');
+        });
+      }
+      out.push('</div>');
+    });
+    out.push('</div>');
+  });
+  out.push('</div>');
+  document.getElementById('groups').innerHTML = out.join('');
+}
+
+function render() { renderMeta(); renderGroups(); }
+
+/** ?probe=1 이면 첫 렌더 요약을 이 PC 의 시험 도구로 보낸다(주소 고정, 실패는 무시). */
+function probe() {
+  if (!/(^|[?&])probe=1(&|$)/.test(location.search.slice(1))) return;
+  var body = JSON.stringify({ ok: !failed && !!last, fetched_at: last ? last.fetched_at : null,
+                              slots: last && last.slots ? last.slots.length : 0 });
+  try {
+    fetch(PROBE_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: body })
+      .catch(function () {});
+  } catch (e) {}
+}
+
+function tick() {
+  if (inflight) return;
+  inflight = true;
+  // ★credentials:'omit' — 구글 쿠키를 안 보내야 다계정 계정 돌리기(/u/N/ 404)를 안 탄다.
+  fetch(DATA_URL, { credentials: 'omit', cache: 'no-store' })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (d) {
+      if (!d || !Array.isArray(d.slots)) throw new Error('형식이 다름');
+      last = d;
+      failed = false;
+    })
+    .catch(function () { failed = true; })
+    .then(function () {
+      inflight = false;
+      render();
+      if (!firstDone) { firstDone = true; probe(); }
+    });
+}
+
+function schedule() {
+  if (timer) { clearInterval(timer); timer = null; }
+  if (document.visibilityState === 'visible') timer = setInterval(tick, POLL_MS);
+}
+
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState === 'visible') tick();   // 다시 보이면 즉시 한 번
+  schedule();
+});
+
+function tg() {
+  var d = document.body.classList.toggle('dark');
+  try { localStorage.setItem('aiUsageTheme', d ? 'dark' : 'light'); } catch (e) {}
+  lb();
+}
+function lb() {
+  var b = document.getElementById('tbtn');
+  if (b) b.textContent = document.body.classList.contains('dark') ? '라이트' : '다크';
+}
+
+lb();
+tick();
+schedule();
+</script>
+</body>
+</html>
