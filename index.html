@@ -12,106 +12,195 @@
       404 가 난다(원인 = 브라우저가 실어 보내는 구글 쿠키). 구글 밖 페이지가
       credentials:'omit' 으로 부르면 계정 수와 무관하게 열린다(2026-09-19 실측).
   - 외부 라이브러리 0, 비밀값 0. 공개 JSON 에는 이메일이 없다(Code.gs 화이트리스트).
-  - 모양·색 단계(70/90)·다크 토글은 Code.gs 의 renderPage_ 와 같다.
+  - 화면 원본은 ui/usage-ui.css·js. build_ui.py로 허브·보고 화면과 함께 생성한다.
   - 페이지 디자인을 고칠 때만 다시 올린다. 숫자는 저절로 바뀐다.
 -->
 <style>
-body{--hub-bg:#e9dfcd;--hub-surface:#faefe0;--hub-surface-2:#f1e5d6;--hub-surface-3:#e5d9c4;
+/* BEGIN AI_USAGE_CSS */
+/* 공통 화면 원본. 허브 안에서는 기존 --hub-* 테마를 상속합니다. */
+body.aiu-page{--hub-bg:#e9dfcd;--hub-surface:#faefe0;--hub-surface-2:#f1e5d6;--hub-surface-3:#e5d9c4;
 --hub-border:#d1c9be;--hub-border-strong:#b9aea1;--hub-text:#2f2a27;--hub-strong:#1f1c1a;
---hub-muted:#6d645d;--hub-muted-2:#9b8e82;--hub-accent:#3f756f;
---hub-good:#4c8752;--hub-good-ink:#376940;--hub-good-soft:#e4ecdd;
---hub-decor:#b85c38;
---hub-bad:#c74e40;--hub-bad-ink:#993228;--hub-bad-soft:#f3ddd7;
---hub-warn:#deaf32;--hub-warn-ink:#826012;--hub-warn-soft:#f4e9cf;
---hub-shadow:0 1px 2px rgba(36,29,25,.08),0 8px 24px rgba(36,29,25,.12);
-color-scheme:light;margin:0;padding:16px 14px 18px;
-background:var(--hub-bg);color:var(--hub-text);
-font-family:'Malgun Gothic',sans-serif;font-size:14px;line-height:1.5;
--webkit-font-smoothing:antialiased}
-body.dark{color-scheme:dark;font-weight:500;
---hub-bg:#1d2021;--hub-surface:#282828;--hub-surface-2:#2f3231;--hub-surface-3:#373a39;
---hub-border:#3b3f3e;--hub-border-strong:#4a4f4d;--hub-text:#ebdbb2;--hub-strong:#fbf1c7;
---hub-muted:#d5c4a1;--hub-muted-2:#bdae93;--hub-accent:#83a598;
---hub-good:#7db57d;--hub-good-ink:#9dc690;--hub-good-soft:#7db57d22;
---hub-decor:#e08a5b;
---hub-bad:#e25c49;--hub-bad-ink:#ee7c6b;--hub-bad-soft:#e25c4922;
---hub-warn:#e6b749;--hub-warn-ink:#ebbe59;--hub-warn-soft:#e6b74922;
---hub-shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.2)}
-*{box-sizing:border-box}
-.wrap{max-width:1120px;margin:0 auto}
-.groups{display:grid;gap:0 22px}
-@media(min-width:840px){.groups{grid-template-columns:1fr 1fr;align-items:start}}
-.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
-h1{font-size:18px;margin:0 0 3px;color:var(--hub-strong);letter-spacing:-.01em}
-.meta{color:var(--hub-muted);font-size:12.5px}
-.lag{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;padding:1px 7px;
-border-radius:99px;border:1px solid var(--hub-warn);color:var(--hub-warn-ink);
-background:var(--hub-warn-soft)}
-.fail{margin-top:3px;color:var(--hub-bad-ink);font-size:12px}
-.tbtn{flex:0 0 auto;cursor:pointer;font:inherit;font-size:12.5px;padding:6px 12px;
-border-radius:8px;border:1px solid var(--hub-border-strong);
-background:var(--hub-surface);color:var(--hub-muted)}
-.tbtn:hover{background:var(--hub-surface-2);color:var(--hub-text)}
-.grp{margin-bottom:18px}
-.grp>h2{display:flex;align-items:center;gap:9px;margin:0 0 10px;
-font-size:16px;font-weight:700;color:var(--hub-strong);letter-spacing:-.01em}
-.grp>h2 .bar{flex:0 0 auto;width:4px;height:17px;border-radius:2px;
-background:var(--hub-accent)}
-.grp>h2 .who{flex:0 0 auto}
-.grp>h2 .rule{flex:1 1 auto;height:1px;background:var(--hub-border)}
-.grp>h2 .cnt{flex:0 0 auto;font-size:11.5px;font-weight:600;color:var(--hub-muted);
-padding:2px 8px;border:1px solid var(--hub-border);border-radius:99px}
-.card{background:var(--hub-surface);border:1px solid var(--hub-border);border-radius:10px;
-padding:12px 14px;margin-bottom:8px;box-shadow:var(--hub-shadow)}
-.ct{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;
-padding-bottom:8px;border-bottom:1px solid var(--hub-border)}
-.ct b{font-size:14.5px;color:var(--hub-strong)}
-.ct span{color:var(--hub-muted);font-size:12px}
-.row{margin:7px 0}
-.rl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
-font-size:13px;margin-bottom:4px}
-.rl .nm{color:var(--hub-text)}
-.rl .r{color:var(--hub-muted-2);font-size:11.5px}
-.pct{font-variant-numeric:tabular-nums;font-weight:700;font-size:13.5px}
-.bar{height:10px;background:var(--hub-surface-3);border-radius:99px;overflow:hidden;
-border:1px solid var(--hub-border)}
-.tag{display:inline-block;min-width:34px;text-align:center;font-size:11px;font-weight:700;
-padding:1px 7px;border-radius:99px;border:1px solid;margin-right:6px;vertical-align:1px}
-.ok .tag{color:var(--hub-good-ink);border-color:var(--hub-good);
-background:var(--hub-good-soft)}
-.mid .tag{color:var(--hub-warn-ink);border-color:var(--hub-warn);
-background:var(--hub-warn-soft)}
-.crit .tag{color:var(--hub-bad-ink);border-color:var(--hub-bad);
-background:var(--hub-bad-soft)}
-.bar i{display:block;height:100%;border-radius:99px}
-.ok .bar i{background:var(--hub-good)}.ok .pct{color:var(--hub-good-ink)}
-.mid .bar i{background:var(--hub-warn)}.mid .pct{color:var(--hub-warn-ink)}
-.crit .bar i{background:var(--hub-bad)}.crit .pct{color:var(--hub-bad-ink)}
-.err{color:var(--hub-bad-ink);font-size:12.5px}
-.stale{color:var(--hub-warn-ink);font-size:11.5px;margin:-2px 0 8px}
-.empty{color:var(--hub-muted);font-size:13px}
-footer{color:var(--hub-muted-2);font-size:11.5px;text-align:center;margin-top:16px}
-@media(max-width:420px){.rl{flex-wrap:wrap}.rl .r{width:100%;text-align:right}}
+--hub-muted:#6d645d;--hub-accent:#3f756f;--hub-good:#4c8752;--hub-bad:#c74e40;--hub-bad-ink:#993228;
+color-scheme:light;margin:0;padding:28px 20px;background:var(--hub-bg);color:var(--hub-text);
+font:14px/1.5 'Malgun Gothic','Apple SD Gothic Neo',sans-serif;-webkit-font-smoothing:antialiased}
+body.aiu-page.dark{color-scheme:dark;--hub-bg:#1d2021;--hub-surface:#282828;--hub-surface-2:#2f3231;
+--hub-surface-3:#373a39;--hub-border:#3b3f3e;--hub-border-strong:#4a4f4d;--hub-text:#ebdbb2;
+--hub-strong:#fbf1c7;--hub-muted:#d5c4a1;--hub-accent:#83a598;--hub-good:#7db57d;--hub-bad:#e25c49;--hub-bad-ink:#ee7c6b}
+.aiu-page .wrap{max-width:1080px;margin:0 auto}
+.aiu-view{color:var(--hub-text);font:14px/1.5 'Malgun Gothic','Apple SD Gothic Neo',sans-serif;min-width:0}
+.aiu-view,.aiu-view *{box-sizing:border-box}
+.aiu-view .aiu-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:28px}
+.aiu-view .aiu-top h1{margin:0 0 6px;font-size:23px;letter-spacing:-.7px;line-height:1.35;color:var(--hub-strong)}
+.aiu-view .aiu-meta{color:var(--hub-muted);font-size:12px}
+.aiu-view .aiu-theme-button{font:inherit;font-size:12px;color:var(--hub-text);background:var(--hub-surface);
+border:1px solid var(--hub-border);border-radius:10px;padding:8px 14px;min-height:44px;flex-shrink:0;cursor:pointer}
+.aiu-view .aiu-section-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:0 0 12px}
+.aiu-view .aiu-section-head h2{font-size:15px;margin:0;font-weight:700;color:var(--hub-text)}
+.aiu-view .aiu-section-head>span{font-size:11px;color:var(--hub-muted)}
+.aiu-view .aiu-groups{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+.aiu-view .aiu-account{min-width:0;background:var(--hub-surface);border:1px solid var(--hub-border-strong);border-radius:14px;overflow:hidden}
+.aiu-view .aiu-account-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:13px 18px;background:var(--hub-surface-2);border-bottom:1px solid var(--hub-border)}
+.aiu-view .aiu-account-head h3{margin:0;font-size:15px;font-weight:700;color:var(--hub-strong)}
+.aiu-view .aiu-account-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.aiu-view .aiu-card{min-width:0;padding:18px}
+.aiu-view .aiu-card+.aiu-card{border-left:1px solid var(--hub-border)}
+.aiu-view .aiu-card-head{display:flex;align-items:baseline;justify-content:space-between;gap:6px;flex-wrap:wrap}
+.aiu-view .aiu-card h4{font-size:15px;font-weight:700;line-height:1.4;margin:0;color:var(--hub-text)}
+.aiu-view .aiu-plan{font-size:11px;color:var(--hub-muted)}
+.aiu-view .aiu-owner{color:var(--hub-muted);font-size:12px;overflow-wrap:anywhere}
+.aiu-view .aiu-primary{margin-top:22px}
+.aiu-view .aiu-limit-head{display:flex;justify-content:space-between;gap:5px;align-items:baseline;flex-wrap:wrap;font-size:12px}
+.aiu-view .aiu-status{font-size:11px;color:var(--hub-bad-ink)}
+.aiu-view .aiu-state-unknown .aiu-status{color:var(--hub-muted)}
+.aiu-view .aiu-value{font-size:42px;line-height:1.2;letter-spacing:-1.5px;font-weight:700;font-variant-numeric:tabular-nums;margin:4px 0 12px}
+.aiu-view .aiu-value>span{font-size:17px;letter-spacing:0;margin-left:3px;font-weight:500}
+.aiu-view .aiu-track{height:6px;background:var(--hub-surface-3);border-radius:99px;overflow:hidden}
+.aiu-view .aiu-track i{display:block;height:100%;background:var(--hub-accent);border-radius:inherit}
+.aiu-view .aiu-state-crit .aiu-track i{background:var(--hub-bad)}
+.aiu-view .aiu-state-crit .aiu-value,.aiu-view .aiu-state-crit .aiu-small-value{color:var(--hub-bad-ink)}
+.aiu-view .aiu-reset{color:var(--hub-muted);font-size:11px;margin-top:7px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.aiu-view .aiu-other-limits{border-top:1px solid var(--hub-border);margin-top:18px;padding-top:13px;display:grid;gap:12px}
+.aiu-view .aiu-small-value{font-weight:700;font-variant-numeric:tabular-nums}
+.aiu-view .aiu-secondary .aiu-track{height:4px;margin-top:6px}
+.aiu-view .aiu-secondary .aiu-reset{margin-top:5px}
+.aiu-view .aiu-legend{font-size:11px;color:var(--hub-muted);margin:10px 0 24px}
+.aiu-view .aiu-err,.aiu-view .aiu-stale,.aiu-view .aiu-fail{font-size:12px;color:var(--hub-bad-ink);overflow-wrap:anywhere}
+.aiu-view .aiu-stale{margin:12px 0 0}
+.aiu-view .aiu-fail{margin-top:5px}
+.aiu-view .aiu-lag{color:var(--hub-bad-ink);margin-left:8px;font-weight:700}
+.aiu-view .aiu-missing{font-size:42px;color:var(--hub-muted);margin:20px 0 6px}
+.aiu-view .aiu-empty{color:var(--hub-muted);font-size:12px}
+.aiu-view .aiu-trend{border-top:1px solid var(--hub-border);padding-top:4px}
+.aiu-view .aiu-trend summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:17px 0;min-height:60px;cursor:pointer}
+.aiu-view .aiu-trend summary::-webkit-details-marker{display:none}
+.aiu-view .aiu-trend summary strong{font-size:15px;display:block}
+.aiu-view .aiu-trend summary small{font-size:12px;color:var(--hub-muted);display:block;margin-top:3px}
+.aiu-view .aiu-expand{font-size:12px;color:var(--hub-muted)}
+.aiu-view .aiu-expand:after{content:'펼치기'}
+.aiu-view .aiu-trend[open] .aiu-expand:after{content:'접기'}
+.aiu-view .aiu-trend-empty{padding:28px 16px;text-align:center;background:var(--hub-surface-2);border-radius:12px;color:var(--hub-muted)}
+.aiu-view .aiu-trend-empty strong{font-size:14px;font-weight:500;color:var(--hub-text)}
+.aiu-view .aiu-trend-empty p{font-size:12px;margin:7px 0 12px}
+.aiu-view .aiu-trend-empty>span{font-size:11px}
+.aiu-view .aiu-footer{font-size:11px;color:var(--hub-muted);margin-top:22px;line-height:1.7}
+.aiu-view .aiu-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(min-width:1000px){.aiu-view .aiu-groups{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){body.aiu-page{padding:20px 14px}.aiu-view .aiu-groups{gap:14px}.aiu-view .aiu-account-head{padding:11px 13px}.aiu-view .aiu-card{padding:13px}.aiu-view .aiu-value{font-size:38px}.aiu-view .aiu-primary{margin-top:18px}.aiu-view .aiu-top{margin-bottom:22px}}
+/* END AI_USAGE_CSS */
 </style>
 </head>
-<body>
+<body class="aiu-page">
 <script>
 // body 가 열리자마자 저장된 테마를 입힌다(깜빡임 방지).
-(function(){try{if(localStorage.getItem('aiUsageTheme')==='dark'){document.body.className='dark';}}catch(e){}})();
+(function(){try{if(localStorage.getItem('aiUsageTheme')==='dark'){document.body.classList.add('dark');}}catch(e){}})();
 </script>
-<div class="wrap">
-  <div class="top">
+<div class="wrap"><main class="aiu-view">
+  <div class="aiu-top">
     <div>
-      <h1>AI 사용량 현황판</h1>
-      <div class="meta" id="meta">불러오는 중…</div>
-      <div class="fail" id="fail" hidden></div>
+      <h1>AI 사용량</h1>
+      <div class="aiu-meta" id="meta">불러오는 중…</div>
+      <div class="aiu-fail" id="fail" hidden></div>
     </div>
-    <button id="tbtn" class="tbtn" type="button" onclick="tg()">다크</button>
+    <button id="tbtn" class="aiu-theme-button" type="button" onclick="tg()">다크</button>
   </div>
   <div id="groups"></div>
-  <footer>구독 한도 사용률입니다. 조회 자체는 사용량을 늘리지 않습니다.</footer>
-</div>
+  <footer class="aiu-footer">구독 한도 사용률입니다. 조회 자체는 사용량을 늘리지 않습니다.</footer>
+</main></div>
 <script>
+/* BEGIN AI_USAGE_JS */
+/* AI 사용량 화면의 공통 원본. build_ui.py로 각 배포본에 포함합니다.
+ * 데이터 조회·DOM·인증에 의존하지 않는 표시 전용 renderer입니다. */
+var AIUsageUI = (function () {
+  function esc(s) {
+    return String(s === null || s === undefined ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function percent(value) {
+    if (typeof value !== 'number' && typeof value !== 'string') return null;
+    if (typeof value === 'string' && !value.trim()) return null;
+    var p = Number(value);
+    return isFinite(p) && p >= 0 ? p : null;
+  }
+  function tone(p) { return p === null ? 'unknown' : p >= 80 ? 'crit' : 'ok'; }
+  function shortTime(s) {
+    if (!s) return '';
+    var time = Date.parse(s);
+    if (isNaN(time)) return '';
+    return new Date(time + 9 * 60 * 60 * 1000).toISOString().slice(5, 16).replace('T', ' ');
+  }
+  function mainIndex(limits) {
+    var weekly = limits.findIndex(function (l) { return l.kind === 'weekly_all'; });
+    if (weekly < 0) weekly = limits.findIndex(function (l) { return l.name === '주간'; });
+    return weekly < 0 ? 0 : weekly;
+  }
+  function limitHtml(l, main) {
+    var p = percent(l.percent), t = tone(p), reset = shortTime(l.resets_at);
+    var status = p === null ? '확인 안 됨' : p >= 100 ? '한도 도달' : p >= 80 ? '사용량 높음' : '';
+    var out = '<div class="aiu-limit ' + (main ? 'aiu-primary ' : 'aiu-secondary ') + 'aiu-state-' + t + '">';
+    out += '<div class="aiu-limit-head"><span>' + esc(l.name || '사용 한도') + '</span>';
+    if (main) {
+      out += (status ? '<span class="aiu-status">' + status + '</span>' : '') + '</div>';
+      out += '<div class="aiu-value">' + (p === null ? '—' : esc(p) + '<span>%</span>') + '</div>';
+    } else {
+      out += '<span class="aiu-small-value">' + (p === null ? '—' : esc(p) + '%') +
+        (status ? '<span class="aiu-sr-only"> · ' + status + '</span>' : '') + '</span></div>';
+    }
+    if (p !== null) {
+      out += '<div class="aiu-track" role="meter" aria-label="' + esc(l.name || '사용 한도') +
+        '" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.min(p, 100) +
+        '" aria-valuetext="' + esc(p) + '% ' + status + '"><i style="width:' + Math.min(p, 100) + '%"></i></div>';
+    }
+    out += '<div class="aiu-reset">' + (reset ? esc(reset) + ' 리셋' : '리셋 시각 미확인') + '</div></div>';
+    return out;
+  }
+  function cards(data) {
+    var slots = data && Array.isArray(data.slots) ? data.slots : [];
+    var out = '<div class="aiu-section-head"><h2>현재 사용량</h2><span>계정별 구독 한도</span></div>';
+    out += '<div class="aiu-groups">';
+    ['telmon0001', 'dombom4483'].forEach(function (owner) {
+      var accountSlots = slots.filter(function (s) { return s.owner === owner; });
+      if (!accountSlots.length) return;
+      out += '<section class="aiu-account" aria-label="' + esc(owner) + ' 계정">' +
+        '<div class="aiu-account-head"><h3>' + (owner === 'telmon0001' ? '텔몬' : '돔봄') +
+        '</h3><span class="aiu-owner">' + esc(owner) + '</span></div><div class="aiu-account-cards">';
+      accountSlots.forEach(function (s) {
+        out += '<article class="aiu-card"><div class="aiu-card-head"><h4>' + esc(s.tool_name || s.tool || '') +
+          '</h4><span class="aiu-plan">' + esc(s.plan || '') + '</span></div>';
+        if (!s.ok && !s.stale) {
+          out += '<div class="aiu-missing">—</div><div class="aiu-err">조회 실패 — ' + esc(s.error || '다음 수집을 기다립니다') + '</div>';
+        } else {
+          if (s.stale) out += '<div class="aiu-stale">' + esc(s.stale_minutes == null ? '?' : s.stale_minutes) + '분 전 값입니다 · 현재 조회 실패</div>';
+          var limits = Array.isArray(s.limits) ? s.limits : [];
+          if (!limits.length) out += '<div class="aiu-missing">—</div><div class="aiu-empty">한도 정보가 없습니다</div>';
+          else {
+            var selected = mainIndex(limits);
+            out += limitHtml(limits[selected], true);
+            if (limits.length > 1) {
+              out += '<div class="aiu-other-limits">';
+              limits.forEach(function (l, i) { if (i !== selected) out += limitHtml(l, false); });
+              out += '</div>';
+            }
+          }
+        }
+        out += '</article>';
+      });
+      out += '</div></section>';
+    });
+    out += '</div>';
+    if (!slots.length) out += '<p class="aiu-empty">아직 수집된 값이 없습니다.</p>';
+    return out + '<p class="aiu-legend">80%부터 빨강 · 리셋 시각은 한국 시간</p>';
+  }
+  function trend() {
+    return '<details class="aiu-trend"><summary><span><strong>사용량 추이</strong>' +
+      '<small>날짜와 시간대별 사용 패턴</small></span><span class="aiu-expand" aria-hidden="true"></span></summary>' +
+      '<div class="aiu-trend-empty"><strong>아직 추이 데이터가 없습니다</strong>' +
+      '<p>토큰 수집 연결 후 일별·시간별 사용량을 보여드립니다.</p>' +
+      '<span>현재 한도 사용률과 소비 토큰은 서로 다른 지표입니다.</span></div></details>';
+  }
+  return { cards: cards, trend: trend, tone: tone, percent: percent, shortTime: shortTime };
+})();
+/* END AI_USAGE_JS */
 // ── 설정 ─────────────────────────────────────────────────────────────
 var DATA_URL = 'https://script.google.com/macros/s/AKfycbwZJh7CGtCfvuZ__rcN0M-kcAAm8KPC8mXM_uGg60fg8uzuKbvl9AgZfslV7BhM8KQTjg/exec?format=json';
 var POLL_MS = 30000;          // 탭이 보일 때만 이 간격으로 다시 받는다
@@ -128,11 +217,6 @@ function esc(s) {
   return String(s === null || s === undefined ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
-/** 색만으로 구분하지 않는다. 단계는 3개, 글자 배지를 같이 붙인다. */
-function tone(p) { return p >= 90 ? 'crit' : (p >= 70 ? 'mid' : 'ok'); }
-function toneLabel(t) { return t === 'crit' ? '한도' : (t === 'mid' ? '주의' : '여유'); }
-function shortTime(s) { return s ? String(s).replace('T', ' ').slice(5, 16) : ''; }
-
 function ageMinutes(iso) {
   var t = Date.parse(iso);
   return isNaN(t) ? null : Math.max(0, Math.floor((Date.now() - t) / 60000));
@@ -145,7 +229,7 @@ function renderMeta() {
     var age = ageMinutes(last.fetched_at);
     var html = '기준 ' + esc(String(last.fetched_at).slice(11, 16)) +
                (age === null ? '' : ' · ' + age + '분 전');
-    if (age !== null && age > LAG_MINUTES) html += '<span class="lag">수집 지연</span>';
+    if (age !== null && age > LAG_MINUTES) html += '<span class="aiu-lag">수집 지연</span>';
     meta.innerHTML = html;
   } else if (last) {
     meta.textContent = '아직 수집된 값이 없습니다. 운영 PC 수집기가 한 번 보내면 표시됩니다.';
@@ -159,43 +243,7 @@ function renderMeta() {
 }
 
 function renderGroups() {
-  if (!last) return;
-  var out = ['<div class="groups">'];
-  ['telmon0001', 'dombom4483'].forEach(function (owner) {
-    var cards = (last.slots || []).filter(function (s) { return s.owner === owner; });
-    if (!cards.length) return;
-    out.push('<div class="grp"><h2><span class="bar"></span>' +
-             '<span class="who">' + esc(owner) + '</span>' +
-             '<span class="rule"></span>' +
-             '<span class="cnt">' + cards.length + '개</span></h2>');
-    cards.forEach(function (s) {
-      out.push('<div class="card"><div class="ct"><b>' + esc(s.tool_name) + '</b>');
-      out.push('<span>' + esc(s.plan || '') + '</span></div>');
-      if (!s.ok && !s.stale) {
-        out.push('<div class="err">조회 실패 — ' + esc(s.error) + '</div>');
-      } else {
-        if (s.stale) {
-          out.push('<div class="stale">' + (s.stale_minutes || 0) +
-                   '분 전 값입니다 (지금 조회는 실패)</div>');
-        }
-        (s.limits || []).forEach(function (l) {
-          var p = Number(l.percent) || 0;
-          out.push('<div class="row ' + tone(p) + '">');
-          out.push('<div class="rl"><span class="nm">' + esc(l.name) + '</span>');
-          out.push('<span><span class="tag">' + toneLabel(tone(p)) + '</span>' +
-                   '<span class="pct">' + p + '%</span>' +
-                   (l.resets_at ? ' <span class="r">리셋 ' + esc(shortTime(l.resets_at)) + '</span>' : '') +
-                   '</span></div>');
-          out.push('<div class="bar"><i style="width:' + Math.min(p, 100) + '%"></i></div>');
-          out.push('</div>');
-        });
-      }
-      out.push('</div>');
-    });
-    out.push('</div>');
-  });
-  out.push('</div>');
-  document.getElementById('groups').innerHTML = out.join('');
+  if (last) document.getElementById('groups').innerHTML = AIUsageUI.cards(last);
 }
 
 function render() { renderMeta(); renderGroups(); }
