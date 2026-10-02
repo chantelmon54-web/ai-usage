@@ -97,6 +97,89 @@ border:1px solid var(--hub-border);border-radius:10px;padding:8px 14px;min-heigh
 .aiu-view .aiu-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(min-width:1000px){.aiu-view .aiu-groups{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){body.aiu-page{padding:20px 14px}.aiu-view .aiu-groups{gap:14px}.aiu-view .aiu-account-head{padding:11px 13px}.aiu-view .aiu-card{padding:13px}.aiu-view .aiu-value{font-size:38px}.aiu-view .aiu-primary{margin-top:18px}.aiu-view .aiu-top{margin-bottom:22px}}
+
+/* mount() 전용. cards()만 사용하는 카톡 보고 화면에는 적용되지 않는다. */
+.aiu-view .aiu-fold-toolbar{display:flex;gap:6px;align-items:center}
+.aiu-view .aiu-fold-toolbar button,.aiu-view .aiu-calendar button{font:inherit;color:var(--hub-text);cursor:pointer}
+.aiu-view .aiu-fold-toolbar button{font-size:12px;border:1px solid var(--hub-border-strong);background:var(--hub-surface);border-radius:7px;min-height:38px;padding:7px 11px;white-space:nowrap}
+.aiu-view .aiu-fold-toolbar button:disabled{opacity:.45;cursor:default}
+.aiu-view .aiu-collapse-head{list-style:none;display:flex;cursor:pointer;align-items:center;flex-wrap:wrap;gap:5px 10px;min-height:48px}
+.aiu-view .aiu-collapse-head::-webkit-details-marker{display:none}
+.aiu-view .aiu-fold-title{display:flex;align-items:baseline;gap:9px;flex:1;min-width:0;flex-wrap:wrap}
+.aiu-view .aiu-fold-action{margin-left:auto;font-size:11px;color:var(--hub-muted);font-weight:400;white-space:nowrap}
+.aiu-view .aiu-fold-action:after{content:'접기 ⌃'}
+.aiu-view details:not([open])>.aiu-collapse-head .aiu-fold-action:after{content:'펴기 ⌄'}
+.aiu-view .aiu-account-summary{display:flex;gap:5px;align-items:center;flex-wrap:wrap;width:100%;font-size:12px;font-weight:400;margin-top:3px;color:var(--hub-text)}
+.aiu-view .aiu-account-summary b{font-variant-numeric:tabular-nums;font-weight:700}
+.aiu-view .aiu-account-summary .aiu-summary-crit{color:var(--hub-bad-ink)}
+.aiu-view .aiu-collapsible[open] .aiu-account-summary,.aiu-view .aiu-collapsible[open] .aiu-nearest{display:none}
+.aiu-view .aiu-collapsible:not([open])>.aiu-account-head{border-bottom:0;background:var(--hub-surface)}
+.aiu-view .aiu-collapsible:not([open])>:not(summary){display:none!important}
+.aiu-view .aiu-calendar{--aiu-expiry:#936521;margin-top:26px;padding:16px;background:var(--hub-surface);border:1px solid var(--hub-border-strong);border-radius:14px;min-width:0}
+body.dark .aiu-view .aiu-calendar{--aiu-expiry:#e3bc74}
+.aiu-view .aiu-calendar-head{padding:2px 0}
+.aiu-view .aiu-calendar-head strong{font-size:15px;color:var(--hub-strong)}
+.aiu-view .aiu-nearest{width:100%;display:block;font-size:12px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400;color:var(--hub-muted);font-variant-numeric:tabular-nums}
+.aiu-view .aiu-calendar-body{padding-top:14px}
+.aiu-view .aiu-calendar [hidden]{display:none!important}
+.aiu-view .aiu-calendar-tabs{display:flex;gap:4px;padding:3px;margin-bottom:20px;max-width:390px;background:var(--hub-surface-2);border-radius:9px}
+.aiu-view .aiu-calendar-tabs button{flex:1;border:1px solid transparent;background:transparent;border-radius:7px;font-size:13px;min-height:44px;padding:9px 4px}
+.aiu-view .aiu-calendar-tabs button[aria-pressed=true]{background:var(--hub-surface);border-color:var(--hub-border-strong);color:var(--hub-accent);font-weight:700}
+.aiu-view .aiu-calendar h3{font-size:13px;font-weight:500;color:var(--hub-muted);margin:0 0 9px}
+.aiu-view .aiu-agenda>section+section{margin-top:25px}
+.aiu-view .aiu-events{list-style:none;padding:0;margin:0}
+.aiu-view .aiu-event{display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--hub-border);font-size:13px;min-width:0}
+.aiu-view .aiu-event:last-child{border-bottom:0}
+.aiu-view .aiu-event-date{width:52px;flex-shrink:0;font-variant-numeric:tabular-nums}
+.aiu-view .aiu-event-date b{font-size:15px;font-weight:500;color:var(--hub-text)}
+.aiu-view .aiu-event-date small{display:block;color:var(--hub-muted);font-size:11px;margin-top:2px}
+.aiu-view .aiu-event-info{min-width:0;overflow-wrap:anywhere}
+.aiu-view .aiu-event-info small{color:var(--hub-muted);font-size:11px;margin-left:4px}
+.aiu-view .aiu-event-description{font-size:12px;color:var(--hub-muted);margin-top:4px}
+.aiu-view .aiu-event-description b{font-weight:500;color:var(--hub-text);font-variant-numeric:tabular-nums}
+.aiu-view .aiu-event-due{font-size:11px;color:var(--hub-muted);margin-top:4px}
+.aiu-view .aiu-calendar .aiu-urgent,.aiu-view .aiu-event-stale{font-size:11px;color:var(--hub-bad-ink)}
+.aiu-view .aiu-month-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:9px}
+.aiu-view .aiu-month-nav strong{font-size:14px;white-space:nowrap}
+.aiu-view .aiu-month-nav button{border:1px solid var(--hub-border);background:var(--hub-surface);border-radius:7px;min-width:40px;min-height:40px;font-size:19px;padding:4px}
+.aiu-view .aiu-month-nav [data-aiu-today]{font-size:11px;margin-left:4px}
+.aiu-view .aiu-weekdays,.aiu-view .aiu-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.aiu-view .aiu-weekdays span{text-align:center;color:var(--hub-muted);font-size:11px;padding:8px 0}
+.aiu-view .aiu-days{gap:2px}
+.aiu-view .aiu-days .aiu-day{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;min-height:46px;padding:5px 1px;border:1px solid transparent;border-radius:8px;background:transparent;font-size:13px;position:relative}
+.aiu-view .aiu-day.aiu-today .aiu-day-number{color:var(--hub-accent);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.aiu-view .aiu-day[aria-pressed=true]{background:var(--hub-surface-2);border-color:var(--hub-accent)}
+.aiu-view .aiu-day-marks{display:flex;justify-content:center;gap:3px;height:5px}
+.aiu-view .aiu-mark-reset,.aiu-view .aiu-mark-expiry{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--hub-accent)}
+.aiu-view .aiu-mark-expiry{background:var(--aiu-expiry)}
+.aiu-view .aiu-day-event,.aiu-view .aiu-day-more{display:none}
+.aiu-view .aiu-calendar-legend{display:flex;justify-content:center;gap:17px;font-size:11px;color:var(--hub-muted);margin-top:14px}
+.aiu-view .aiu-calendar-legend span{display:flex;align-items:center;gap:5px}
+.aiu-view .aiu-selected{margin-top:18px;padding-top:18px;border-top:1px solid var(--hub-border);min-width:0}
+.aiu-view .aiu-selected h3{color:var(--hub-text);font-weight:700}
+.aiu-view .aiu-schedule-notes{margin-top:18px;padding:12px;background:var(--hub-surface-2);border-radius:8px;color:var(--hub-muted);font-size:11px;overflow-wrap:anywhere}
+.aiu-view .aiu-schedule-notes strong{font-weight:500;color:var(--hub-bad-ink)}
+.aiu-view .aiu-schedule-notes ul{padding-left:16px;margin:4px 0 0}
+.aiu-view .aiu-calendar-foot{font-size:11px;color:var(--hub-muted);margin:17px 0 0}
+.aiu-view .aiu-collapse-head:focus-visible,.aiu-view .aiu-calendar button:focus-visible,.aiu-view .aiu-fold-toolbar button:focus-visible{outline:2px solid var(--hub-accent);outline-offset:2px}
+@media(pointer:coarse){.aiu-view .aiu-fold-toolbar button,.aiu-view .aiu-month-nav button{min-height:44px}}
+@media(min-width:1000px){
+  .aiu-view .aiu-calendar{padding:22px}
+  .aiu-view .aiu-calendar-head strong{font-size:16px}
+  .aiu-view .aiu-month{display:grid;grid-template-columns:minmax(0,1fr) 245px;gap:24px}
+  .aiu-view .aiu-calendar-grid{min-width:0}
+  .aiu-view .aiu-selected{margin:0;padding:17px 0 0 22px;border-top:0;border-left:1px solid var(--hub-border)}
+  .aiu-view .aiu-days{gap:0;border-top:1px solid var(--hub-border);border-left:1px solid var(--hub-border);border-radius:8px;overflow:hidden}
+  .aiu-view .aiu-days .aiu-day,.aiu-view .aiu-day-blank{min-height:90px;align-items:stretch;gap:3px;padding:7px 4px;border-right:1px solid var(--hub-border);border-bottom:1px solid var(--hub-border);border-radius:0;text-align:left}
+  .aiu-view .aiu-day-number{padding-left:3px}
+  .aiu-view .aiu-day-marks{display:none}
+  .aiu-view .aiu-day-event{display:block;border-radius:4px;background:color-mix(in srgb,var(--hub-accent) 13%,var(--hub-surface));padding:4px;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+  .aiu-view .aiu-chip-expiry{background:color-mix(in srgb,var(--aiu-expiry) 14%,var(--hub-surface))}
+  .aiu-view .aiu-day-event small{display:block;font-size:11px;color:var(--hub-muted)}
+  .aiu-view .aiu-day-more{display:block;font-size:10px;color:var(--hub-muted);text-align:center}
+  .aiu-view .aiu-agenda{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:30px}
+  .aiu-view .aiu-agenda>section+section{margin-top:0}
+}
 /* END AI_USAGE_CSS */
 </style>
 </head>
@@ -120,7 +203,8 @@ border:1px solid var(--hub-border);border-radius:10px;padding:8px 14px;min-heigh
 <script>
 /* BEGIN AI_USAGE_JS */
 /* AI 사용량 화면의 공통 원본. build_ui.py로 각 배포본에 포함합니다.
- * 데이터 조회·DOM·인증에 의존하지 않는 표시 전용 renderer입니다. */
+ * cards()는 보고용 순수 renderer, mount()는 브라우저용 일정·접기 controller입니다.
+ * 데이터 조회·인증은 각 화면에 남기며 GAS에서는 DOM 함수를 호출하지 않습니다. */
 var AIUsageUI = (function () {
   function esc(s) {
     return String(s === null || s === undefined ? '' : s)
@@ -278,6 +362,237 @@ var AIUsageUI = (function () {
     if (!slots.length) out += '<p class="aiu-empty">아직 수집된 값이 없습니다.</p>';
     return out + '<p class="aiu-legend">80%부터 빨강 · 초기화권은 만료 7일 전부터 남은 날짜 빨강 · 시각은 한국 시간</p>';
   }
+  /* 일정은 수집된 날짜만 표시한다. 다음 주 날짜를 추정하거나 초기화권을 차감하지 않는다. */
+  function dayKey(day) { return new Date(day * DAY_MS).toISOString().slice(0, 10); }
+  function validDate(s) {
+    if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+    var t = Date.parse(s + 'T00:00:00Z');
+    return isFinite(t) && new Date(t).toISOString().slice(0, 10) === s;
+  }
+  function scheduleTime(s, precision) {
+    // shortTime/creditDue는 보고 호환을 유지한다. 일정 정렬에는 시간대·실재 날짜 검사가 추가로 필요하다.
+    if (precision === 'date') return validDate(s) ? Date.parse(s + 'T00:00:00+09:00') : NaN;
+    if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/.test(s) ||
+        !validDate(s.slice(0, 10)) || Number(s.slice(11, 13)) > 23 || Number(s.slice(14, 16)) > 59 ||
+        (s.charAt(16) === ':' && Number(s.slice(17, 19)) > 59)) return NaN;
+    return isoMs(s);
+  }
+  function ownerName(owner) { return owner === 'telmon0001' ? '텔몬' : owner === 'dombom4483' ? '돔봄' : owner; }
+  function schedule(data, now) {
+    now = nowMs(now);
+    var events = [], notes = [], slots = data && Array.isArray(data.slots) ? data.slots : [];
+    function note(text) { if (notes.indexOf(text) < 0) notes.push(text); }
+    if (!slots.length) note('아직 수집된 일정이 없습니다.');
+    slots.forEach(function (s) {
+      if (s.owner !== 'telmon0001' && s.owner !== 'dombom4483') return;
+      var who = ownerName(s.owner), tool = s.tool_name || s.tool || '', prefix = who + ' ' + tool;
+      var groups = {}, limits = Array.isArray(s.limits) ? s.limits : [];
+      function event(t, kind, label, dateOnly, stale) {
+        return { time: t, day: dayKey(kstDay(t)), kind: kind, label: label, owner: who, tool: tool,
+          plan: s.plan || '', dateOnly: dateOnly, stale: stale, count: 1 };
+      }
+      if (s.ok || s.stale) {
+        var weekly = limits.filter(function (l) { return /^weekly_/.test(l.kind || '') || /^주간(?:\s|$)/.test(l.name || ''); });
+        if (!weekly.length) note(prefix + ' · 주간 리셋 미확인');
+        weekly.forEach(function (l) {
+          var t = scheduleTime(l.resets_at, 'second');
+          if (!isFinite(t)) { note(prefix + ' · 리셋 시각 미확인'); return; }
+          if (t <= now) { note(prefix + ' · 리셋 시각 경과, 재확인 필요'); return; }
+          var key = String(t), e = groups[key];
+          if (!e) { e = event(t, 'reset', '주간 리셋', false, !!s.stale); e.scopes = []; groups[key] = e; }
+          var scope = l.kind === 'weekly_all' || l.name === '주간' ? '전체' : String(l.name || '주간').replace(/^주간\s*/, '');
+          if (e.scopes.indexOf(scope) < 0) e.scopes.push(scope);
+        });
+        Object.keys(groups).forEach(function (key) {
+          var e = groups[key];
+          e.label = '주간 ' + (e.scopes.length === 1 && e.scopes[0] === '전체' ? '' : e.scopes.join('·') + ' ') + '리셋';
+          events.push(e);
+        });
+        if (s.stale) note(prefix + ' · 지난 확인값');
+      } else note(prefix + ' · 주간 리셋 조회 실패');
+      // 초기화권 캐시는 사용량 조회 성공 여부와 독립되어 있다.
+      if (!isCodex(s)) return;
+      var rc = s.reset_credits, known = rc && (rc.state === 'ok' || rc.state === 'stale');
+      var count = known ? creditCount(rc.available_count) : null;
+      if (count === null) { note(prefix + ' · 초기화권 확인 안 됨'); return; }
+      if (rc.state === 'stale') note(prefix + ' 초기화권 · 지난 확인값 (' + (shortTime(rc.checked_at) || '시각 미확인') + ')');
+      if (!count) return;
+      var items = Array.isArray(rc.items) ? rc.items.filter(function (i) { return i && i.status === 'available'; }) : [];
+      // ID가 공개되지 않으므로 같은 종류·만료의 항목도 각각 한 장이다.
+      var dated = 0;
+      items.slice(0, count).forEach(function (i) {
+        var dateOnly = i.expires_precision === 'date';
+        var t = i.expires_precision === 'second' || dateOnly ? scheduleTime(i.expires_at, i.expires_precision) : NaN;
+        if (!isFinite(t)) return;
+        dated++;
+        if (dateOnly ? kstDay(t) < kstDay(now) : t <= now) { note(prefix + ' 초기화권 · 기한 경과, 재확인 필요'); return; }
+        var e = event(t, 'expiry', '초기화권 만료', dateOnly, rc.state === 'stale');
+        e.resetType = Object.prototype.hasOwnProperty.call(RESET_TYPE_NAMES, i.reset_type) ? RESET_TYPE_NAMES[i.reset_type] : '초기화권';
+        e.due = creditDue(i, now);
+        events.push(e);
+      });
+      if (dated < count) note(prefix + ' 초기화권 · ' + count + '장 중 ' + dated + '장 만료일 확인');
+      else if (!rc.details_complete || items.length !== count) note(prefix + ' 초기화권 · 만료일 목록 재확인 필요');
+    });
+    events.sort(function (a, b) { return a.time - b.time || a.owner.localeCompare(b.owner) || a.tool.localeCompare(b.tool); });
+    return { events: events, notes: notes };
+  }
+  function eventTime(e) { return e.dateOnly ? '시각 미제공' : shortTime(new Date(e.time).toISOString()).slice(6); }
+  function eventShort(e) {
+    return Number(e.day.slice(5, 7)) + '/' + Number(e.day.slice(8)) + (e.dateOnly ? '' : ' ' + eventTime(e)) +
+      ' · ' + e.owner + ' ' + e.tool + ' ' + (e.kind === 'reset' ? '주간 리셋' : '초기화권 만료') + (e.stale ? ' (지난값)' : '');
+  }
+  function eventRow(e, now) {
+    var days = kstDay(e.time) - kstDay(now), relative = days === 0 ? '오늘' : days === 1 ? '내일' : days + '일 후';
+    var out = '<li class="aiu-event aiu-event-' + e.kind + '"><div class="aiu-event-date"><b>' +
+      Number(e.day.slice(5, 7)) + '/' + Number(e.day.slice(8)) + '</b><small>' + relative + '</small></div><div class="aiu-event-info"><div>' +
+      esc(e.owner + ' · ' + e.tool) + ' <small>' + esc(e.plan) + '</small></div><div class="aiu-event-description"><b>' +
+      esc(eventTime(e)) + '</b> ' + esc(e.label + (e.kind === 'expiry' ? ' · ' + e.resetType + ' 1장' : '')) + '</div>';
+    if (e.due) out += '<div class="aiu-event-due' + (e.due.urgent ? ' aiu-urgent' : '') + '">' + esc(e.due.text) + '</div>';
+    if (e.stale) out += '<div class="aiu-event-stale">지난 확인값 · 재확인 필요</div>';
+    return out + '</div></li>';
+  }
+  function eventList(events, now, empty) {
+    return events.length ? '<ul class="aiu-events">' + events.map(function (e) { return eventRow(e, now); }).join('') + '</ul>' :
+      '<p class="aiu-empty">' + esc(empty || '확인된 일정이 없습니다.') + '</p>';
+  }
+  function calendarHtml(state, result) {
+    var events = result.events, selected = events.filter(function (e) { return e.day === state.day; });
+    var month = state.month, year = +month.slice(0, 4), mon = +month.slice(5), start = new Date(Date.UTC(year, mon - 1, 1));
+    var end = new Date(Date.UTC(year, mon, 0)).getUTCDate(), today = dayKey(kstDay(state.now));
+    var monthLabel = year + '년 ' + mon + '월', out = '<div class="aiu-calendar-tabs" role="group" aria-label="일정 보기">';
+    [['list','다가오는 일정'],['month','월간 달력']].forEach(function (t) {
+      out += '<button type="button" data-aiu-tab="' + t[0] + '" aria-pressed="' + (state.tab === t[0]) + '">' + t[1] + '</button>';
+    });
+    out += '</div><div class="aiu-agenda"' + (state.tab === 'list' ? '' : ' hidden') + '><section><h3>다음 주간 리셋</h3>' +
+      eventList(events.filter(function (e) { return e.kind === 'reset'; }), state.now) + '</section><section><h3>초기화권 만료</h3>' +
+      eventList(events.filter(function (e) { return e.kind === 'expiry'; }), state.now, '확인된 만료 일정이 없습니다.') + '</section></div>';
+    out += '<div class="aiu-month"' + (state.tab === 'month' ? '' : ' hidden') + '><div class="aiu-calendar-grid"><div class="aiu-month-nav">' +
+      '<button type="button" data-aiu-month="-1" aria-label="이전 달">‹</button><strong aria-live="polite">' + monthLabel + '</strong>' +
+      '<button type="button" data-aiu-month="1" aria-label="다음 달">›</button><button type="button" data-aiu-today>오늘</button></div>' +
+      '<div class="aiu-weekdays" aria-hidden="true">' + ['일','월','화','수','목','금','토'].map(function (d) { return '<span>' + d + '</span>'; }).join('') + '</div><div class="aiu-days">';
+    for (var blank = 0; blank < start.getUTCDay(); blank++) out += '<span class="aiu-day-blank"></span>';
+    for (var d = 1; d <= end; d++) {
+      var key = month + '-' + String(d).padStart(2, '0'), daily = events.filter(function (e) { return e.day === key; });
+      var reset = daily.filter(function (e) { return e.kind === 'reset'; }).length, expiry = daily.length - reset;
+      out += '<button type="button" class="aiu-day' + (key === today ? ' aiu-today' : '') + '" data-aiu-day="' + key +
+        '" aria-pressed="' + (key === state.day) + '" aria-label="' + year + '년 ' + mon + '월 ' + d + '일' +
+        (reset ? ' · 리셋 ' + reset + '건' : '') + (expiry ? ' · 만료 ' + expiry + '장' : '') + (key === today ? ' · 오늘' : '') + '">' +
+        '<span class="aiu-day-number">' + d + '</span><span class="aiu-day-marks" aria-hidden="true">' +
+        (reset ? '<i class="aiu-mark-reset"></i>' : '') + (expiry ? '<i class="aiu-mark-expiry"></i>' : '') + '</span>';
+      daily.slice(0, 2).forEach(function (e) {
+        out += '<span class="aiu-day-event aiu-chip-' + e.kind + '" aria-hidden="true">' + esc(e.owner + ' ' + (e.kind === 'expiry' ? '초기화권' : e.tool)) +
+          '<small>' + esc(e.dateOnly ? '만료일' : eventTime(e)) + (e.kind === 'expiry' ? ' 만료' : ' 리셋') + '</small></span>';
+      });
+      if (daily.length > 2) out += '<span class="aiu-day-more" aria-hidden="true">+' + (daily.length - 2) + '</span>';
+      out += '</button>';
+    }
+    out += '</div><div class="aiu-calendar-legend"><span><i class="aiu-mark-reset"></i>주간 리셋</span><span><i class="aiu-mark-expiry"></i>초기화권 만료</span></div></div>';
+    out += '<section class="aiu-selected" aria-live="polite"><h3>' + Number(state.day.slice(5, 7)) + '월 ' + Number(state.day.slice(8)) + '일 일정</h3>' +
+      eventList(selected, state.now, '확인된 일정이 없습니다.') + '</section></div>';
+    if (result.notes.length) out += '<div class="aiu-schedule-notes"><strong>확인 필요</strong><ul>' + result.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul></div>';
+    return out + '<p class="aiu-calendar-foot">한국 시간 · 현재 확인된 주간 리셋과 초기화권 만료만 표시합니다.</p>';
+  }
+  var FOLD_STORAGE = 'aiUsageViewFolds';
+  function loadFolds() {
+    var saved = {}, folds = {};
+    try { saved = JSON.parse(localStorage.getItem(FOLD_STORAGE) || '{}') || {}; } catch (e) { /* 저장 불가 시 기본 펼침 */ }
+    ['telmon0001','dombom4483','schedule'].forEach(function (key) { folds[key] = typeof saved[key] === 'boolean' ? saved[key] : true; });
+    return folds;
+  }
+  function syncFolds(root, state, save) {
+    var details = Array.prototype.slice.call(root.querySelectorAll('details[data-aiu-fold]'));
+    details.forEach(function (d) { state.folds[d.getAttribute('data-aiu-fold')] = d.open; });
+    root.querySelector('[data-aiu-all="close"]').disabled = details.every(function (d) { return !d.open; });
+    root.querySelector('[data-aiu-all="open"]').disabled = details.every(function (d) { return d.open; });
+    if (save) { try { localStorage.setItem(FOLD_STORAGE, JSON.stringify(state.folds)); } catch (e) { /* 표시 기능은 유지 */ } }
+  }
+  function enhanceAccounts(host, state) {
+    host.querySelector('.aiu-section-head>span').outerHTML = '<div class="aiu-fold-toolbar" role="group" aria-label="모든 카드와 일정 접기·펴기">' +
+      '<button type="button" data-aiu-all="close">전체 접기</button><button type="button" data-aiu-all="open">전체 펴기</button></div>';
+    host.querySelectorAll('.aiu-account').forEach(function (account) {
+      var old = account.querySelector('.aiu-account-head'), content = account.querySelector('.aiu-account-cards');
+      var owner = old.querySelector('.aiu-owner').textContent, details = document.createElement('details');
+      details.className = 'aiu-account aiu-collapsible'; details.setAttribute('data-aiu-fold', owner);
+      details.setAttribute('aria-label', account.getAttribute('aria-label')); details.open = state.folds[owner];
+      var summary = document.createElement('summary'); summary.className = 'aiu-account-head aiu-collapse-head';
+      summary.innerHTML = '<span class="aiu-fold-title">' + old.innerHTML + '</span><span class="aiu-fold-action" aria-hidden="true"></span>';
+      var short = document.createElement('span'); short.className = 'aiu-account-summary';
+      content.querySelectorAll('.aiu-card').forEach(function (card, i) {
+        var value = card.querySelector('.aiu-primary .aiu-value'), primary = card.querySelector('.aiu-primary');
+        var line = document.createElement('span'), number = document.createElement('b');
+        number.textContent = value ? value.textContent : '확인 안 됨';
+        if (primary && primary.classList.contains('aiu-state-crit')) number.className = 'aiu-summary-crit';
+        if (i) short.appendChild(document.createTextNode(' · '));
+        line.appendChild(document.createTextNode(card.querySelector('h4').textContent + ' ')); line.appendChild(number);
+        if (card.querySelector('.aiu-stale')) line.appendChild(document.createTextNode(' (지난값)'));
+        short.appendChild(line);
+      });
+      summary.appendChild(short); details.appendChild(summary); details.appendChild(content); account.replaceWith(details);
+    });
+  }
+  function focusKey(root) {
+    var active = document.activeElement;
+    if (!active || !root.contains(active)) return null;
+    if (active.tagName === 'SUMMARY') return ['data-aiu-fold', active.parentElement.getAttribute('data-aiu-fold')];
+    var attrs = ['data-aiu-all','data-aiu-tab','data-aiu-day','data-aiu-month','data-aiu-today'];
+    for (var i = 0; i < attrs.length; i++) if (active.hasAttribute(attrs[i])) return [attrs[i], active.getAttribute(attrs[i])];
+    return null;
+  }
+  function paintMounted(root, state) {
+    var focus = focusKey(root), cardHtml = cards(state.data, state.now);
+    if (cardHtml !== state.cardHtml) {
+      state.cardHost.innerHTML = cardHtml; enhanceAccounts(state.cardHost, state); state.cardHtml = cardHtml;
+    }
+    var result = schedule(state.data, state.now), next = result.events[0];
+    var nearest = next ? eventShort(next) : result.notes.length ? '일정 확인이 필요합니다 · 펼쳐서 확인' : '확인된 다음 일정이 없습니다.';
+    state.nearest.textContent = nearest; state.nearest.title = nearest;
+    var html = calendarHtml(state, result);
+    if (html !== state.calendarHtml) { state.calendarBody.innerHTML = html; state.calendarHtml = html; }
+    syncFolds(root, state, false);
+    if (focus && !root.contains(document.activeElement)) {
+      // 갱신/월 이동 뒤 키보드 위치를 유지한다. 값은 내부에서 만든 날짜·키만 사용한다.
+      var target = root.querySelector('[' + focus[0] + '="' + focus[1] + '"]');
+      if (target) (focus[0] === 'data-aiu-fold' ? target.firstElementChild : target).focus({preventScroll:true});
+    }
+  }
+  function mount(root, data, options) {
+    if (!root) return;
+    var now = nowMs(options && options.now), state = root._aiUsageView;
+    if (!state) {
+      var today = dayKey(kstDay(now));
+      state = { folds: loadFolds(), tab: window.matchMedia('(min-width:1000px)').matches ? 'month' : 'list', month: today.slice(0, 7), day: today };
+      root._aiUsageView = state;
+      root.innerHTML = '<div class="aiu-card-host"></div><details class="aiu-calendar aiu-collapsible" data-aiu-fold="schedule" aria-label="리셋·만료 일정">' +
+        '<summary class="aiu-calendar-head aiu-collapse-head"><span class="aiu-fold-title"><strong>리셋·만료 일정</strong></span>' +
+        '<span class="aiu-fold-action" aria-hidden="true"></span><span class="aiu-nearest"></span></summary><div class="aiu-calendar-body"></div></details>';
+      state.cardHost = root.querySelector('.aiu-card-host'); state.calendarBody = root.querySelector('.aiu-calendar-body');
+      state.nearest = root.querySelector('.aiu-nearest'); root.querySelector('.aiu-calendar').open = state.folds.schedule;
+      root.addEventListener('click', function (ev) {
+        var summary = ev.target.closest('summary');
+        if (summary && summary.parentElement.hasAttribute('data-aiu-fold')) {
+          ev.preventDefault(); summary.parentElement.open = !summary.parentElement.open; syncFolds(root, state, true); return;
+        }
+        var b = ev.target.closest('button'); if (!b || !root.contains(b)) return;
+        if (b.hasAttribute('data-aiu-all')) {
+          root.querySelectorAll('details[data-aiu-fold]').forEach(function (d) { d.open = b.getAttribute('data-aiu-all') === 'open'; });
+          syncFolds(root, state, true); return;
+        }
+        if (b.hasAttribute('data-aiu-tab')) state.tab = b.getAttribute('data-aiu-tab');
+        else if (b.hasAttribute('data-aiu-day')) state.day = b.getAttribute('data-aiu-day');
+        else if (b.hasAttribute('data-aiu-month')) {
+          var date = new Date(state.month + '-01T00:00:00Z'); date.setUTCMonth(date.getUTCMonth() + Number(b.getAttribute('data-aiu-month')));
+          state.month = date.toISOString().slice(0, 7); state.day = state.month + '-01';
+        } else if (b.hasAttribute('data-aiu-today')) { state.day = dayKey(kstDay(state.now)); state.month = state.day.slice(0, 7); }
+        else return;
+        paintMounted(root, state);
+      });
+      root.addEventListener('toggle', function (ev) {
+        if (ev.target.hasAttribute('data-aiu-fold')) syncFolds(root, state, true);
+      }, true);
+    }
+    state.data = data; state.now = now; paintMounted(root, state);
+  }
   function trend() {
     return '<details class="aiu-trend"><summary><span><strong>사용량 추이</strong>' +
       '<small>날짜와 시간대별 사용 패턴</small></span><span class="aiu-expand" aria-hidden="true"></span></summary>' +
@@ -314,7 +629,7 @@ var AIUsageUI = (function () {
     } catch (e) { /* 아래 고정 규칙 */ }
     return m < 6 * 60 || m >= 18 * 60;
   }
-  return { cards: cards, trend: trend, tone: tone, percent: percent, shortTime: shortTime,
+  return { cards: cards, mount: mount, schedule: schedule, trend: trend, tone: tone, percent: percent, shortTime: shortTime,
            sunTimes: sunTimes, autoDark: autoDark };
 })();
 /* END AI_USAGE_JS */
@@ -360,7 +675,7 @@ function renderMeta() {
 }
 
 function renderGroups() {
-  if (last) document.getElementById('groups').innerHTML = AIUsageUI.cards(last);
+  if (last) AIUsageUI.mount(document.getElementById('groups'), last);
 }
 
 function render() { renderMeta(); renderGroups(); }
