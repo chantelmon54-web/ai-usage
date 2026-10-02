@@ -64,6 +64,17 @@ border:1px solid var(--hub-border);border-radius:10px;padding:8px 14px;min-heigh
 .aiu-view .aiu-secondary .aiu-track{height:4px;margin-top:6px}
 .aiu-view .aiu-secondary .aiu-reset{margin-top:5px}
 .aiu-view .aiu-legend{font-size:11px;color:var(--hub-muted);margin:10px 0 24px}
+.aiu-view .aiu-credits{border-top:1px solid var(--hub-border);margin-top:16px;padding-top:12px;font-size:12px;min-width:0}
+.aiu-view .aiu-credits-head{display:flex;justify-content:space-between;align-items:baseline;gap:4px 8px;flex-wrap:wrap}
+.aiu-view .aiu-credits-head b{font-variant-numeric:tabular-nums;color:var(--hub-strong)}
+.aiu-view .aiu-credits-sub,.aiu-view .aiu-credits-note,.aiu-view .aiu-credits-stale{font-size:11px;margin-top:4px;overflow-wrap:anywhere}
+.aiu-view .aiu-credits-sub,.aiu-view .aiu-credits-note{color:var(--hub-muted)}
+.aiu-view .aiu-credits-stale{color:var(--hub-bad-ink)}
+.aiu-view .aiu-credits ul{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.aiu-view .aiu-credits li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1px 8px;font-size:11px;color:var(--hub-muted);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;min-width:0}
+.aiu-view .aiu-credits li b{font-weight:500;color:var(--hub-text)}
+.aiu-view .aiu-credits .aiu-urgent,.aiu-view .aiu-credits li.aiu-urgent b{color:var(--hub-bad-ink)}
+.aiu-view .aiu-credits .aiu-nb{white-space:nowrap}
 .aiu-view .aiu-err,.aiu-view .aiu-stale,.aiu-view .aiu-fail{font-size:12px;color:var(--hub-bad-ink);overflow-wrap:anywhere}
 .aiu-view .aiu-stale{margin:12px 0 0}
 .aiu-view .aiu-fail{margin-top:5px}
@@ -154,7 +165,76 @@ var AIUsageUI = (function () {
     out += '<div class="aiu-reset">' + (reset ? esc(reset) + ' 리셋' : '리셋 시각 미확인') + '</div></div>';
     return out;
   }
-  function cards(data) {
+  /* 코덱스 초기화권(PLAN §5-18). 상태는 수집기가 정하고 여기서는 표시만 한다.
+   * 남은 날짜 = 한국 달력 날짜 차이. 날짜만 온 만료에는 시각을 붙이지 않는다. */
+  var RESET_TYPE_NAMES = { codex_rate_limits: '전체 재설정' };
+  var DAY_MS = 86400000, KST_MS = 9 * 60 * 60 * 1000;
+  function nowMs(now) {
+    if (now instanceof Date) return now.getTime();
+    return typeof now === 'number' && isFinite(now) ? now : Date.now();
+  }
+  function kstDay(ms) { return Math.floor((ms + KST_MS) / DAY_MS); }
+  // 브라우저 Date.parse 는 아무 글이나 날짜로 읽기도 한다. ISO 시각 모양일 때만 시각으로 본다.
+  function isoMs(s) {
+    return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s) ? Date.parse(s) : NaN;
+  }
+  function creditCount(v) {
+    return typeof v === 'number' && isFinite(v) && v >= 0 && Math.floor(v) === v ? v : null;
+  }
+  function creditDue(item, now) {
+    // {label, text, urgent}. 만료를 읽지 못하면 null.
+    var e = item ? item.expires_at : null, p = item ? item.expires_precision : null, days, past;
+    if (p === 'second' && !isNaN(isoMs(e))) {
+      var t = isoMs(e);
+      past = t <= now; days = kstDay(t) - kstDay(now);
+      e = shortTime(e);
+    } else if (p === 'date' && typeof e === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(e)) {
+      days = Math.round(Date.UTC(+e.slice(0, 4), +e.slice(5, 7) - 1, +e.slice(8, 10)) / DAY_MS) - kstDay(now);
+      past = days < 0; e = e.slice(5);
+    } else return null;
+    var text = past ? '기한 경과 · 재확인 필요' : days <= 0 ? '오늘 만료' :
+      days + '일 남음' + (days <= 3 ? ' · 만료 임박' : '');
+    return { label: e, text: text, urgent: past || days <= 3 };
+  }
+  function nb(parts) {
+    // 좁은 칸에서 「21 / 일 남음」처럼 조각 가운데가 끊기지 않게, · 사이에서만 줄을 바꾼다.
+    return parts.map(function (p) { return '<span class="aiu-nb">' + esc(p) + '</span>'; }).join(' · ');
+  }
+  function creditsHtml(rc, now) {
+    var known = rc && (rc.state === 'ok' || rc.state === 'stale');
+    var n = known ? creditCount(rc.available_count) : null;
+    var out = '<div class="aiu-credits"><div class="aiu-credits-head"><span>초기화권</span><b>' +
+      (n === null ? '확인 안 됨' : n === 0 ? '없음(0장)' : n + '장') + '</b></div>';
+    if (n === null) return out + '</div>';
+    if (rc.state === 'stale') {
+      var checked = isNaN(isoMs(rc.checked_at)) ? '' : shortTime(rc.checked_at);
+      out += '<div class="aiu-credits-stale">지난 확인값 · ' + esc(checked || '시각 미확인') + ' 확인</div>';
+    }
+    var items = Array.isArray(rc.items) ? rc.items : null;
+    if (n > 0 && !items) out += '<div class="aiu-credits-note">만료일 확인 안 됨</div>';
+    if (n > 0 && items) {
+      var rows = items.map(function (i) { return { item: i, due: creditDue(i, now) }; });
+      var dated = rows.filter(function (r) { return r.due; });
+      if (dated.length < n) out += '<div class="aiu-credits-note">' + n + '장 중 ' + dated.length + '장 만료일 확인</div>';
+      else if (!rc.details_complete) out += '<div class="aiu-credits-note">만료일 목록 재확인 필요</div>';
+      if (rows.length > 1 && dated.length) {
+        out += '<div class="aiu-credits-sub' + (dated[0].due.urgent ? ' aiu-urgent' : '') + '">가장 빠른 만료 ' +
+          nb([dated[0].due.label].concat(dated[0].due.text.split(' · '))) + '</div>';
+      }
+      out += '<ul>';
+      rows.forEach(function (r) {
+        var type = r.item ? r.item.reset_type : null;
+        var name = Object.prototype.hasOwnProperty.call(RESET_TYPE_NAMES, type) ? RESET_TYPE_NAMES[type] : '초기화권';
+        out += '<li' + (r.due && r.due.urgent ? ' class="aiu-urgent"' : '') + '><b>' + esc(name) + '</b><span>' +
+          (r.due ? nb([r.due.label + ' 만료'].concat(r.due.text.split(' · '))) : '만료일 미확인') + '</span></li>';
+      });
+      out += '</ul>';
+    }
+    return out + '</div>';
+  }
+  function isCodex(s) { return s.tool === 'codex' || /^codex_/.test(String(s.slot || '')); }
+  function cards(data, now) {
+    now = nowMs(now);
     var slots = data && Array.isArray(data.slots) ? data.slots : [];
     var out = '<div class="aiu-section-head"><h2>현재 사용량</h2><span>계정별 구독 한도</span></div>';
     out += '<div class="aiu-groups">';
@@ -183,13 +263,14 @@ var AIUsageUI = (function () {
             }
           }
         }
+        if (isCodex(s)) out += creditsHtml(s.reset_credits, now);
         out += '</article>';
       });
       out += '</div></section>';
     });
     out += '</div>';
     if (!slots.length) out += '<p class="aiu-empty">아직 수집된 값이 없습니다.</p>';
-    return out + '<p class="aiu-legend">80%부터 빨강 · 리셋 시각은 한국 시간</p>';
+    return out + '<p class="aiu-legend">80%부터 빨강 · 초기화권은 만료 3일 전부터 빨강 · 시각은 한국 시간</p>';
   }
   function trend() {
     return '<details class="aiu-trend"><summary><span><strong>사용량 추이</strong>' +
