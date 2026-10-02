@@ -73,7 +73,7 @@ border:1px solid var(--hub-border);border-radius:10px;padding:8px 14px;min-heigh
 .aiu-view .aiu-credits ul{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
 .aiu-view .aiu-credits li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1px 8px;font-size:11px;color:var(--hub-muted);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;min-width:0}
 .aiu-view .aiu-credits li b{font-weight:500;color:var(--hub-text)}
-.aiu-view .aiu-credits .aiu-urgent,.aiu-view .aiu-credits li.aiu-urgent b{color:var(--hub-bad-ink)}
+.aiu-view .aiu-credits .aiu-urgent{color:var(--hub-bad-ink)}
 .aiu-view .aiu-credits .aiu-nb{white-space:nowrap}
 .aiu-view .aiu-err,.aiu-view .aiu-stale,.aiu-view .aiu-fail{font-size:12px;color:var(--hub-bad-ink);overflow-wrap:anywhere}
 .aiu-view .aiu-stale{margin:12px 0 0}
@@ -169,6 +169,7 @@ var AIUsageUI = (function () {
    * 남은 날짜 = 한국 달력 날짜 차이. 날짜만 온 만료에는 시각을 붙이지 않는다. */
   var RESET_TYPE_NAMES = { codex_rate_limits: '전체 재설정' };
   var DAY_MS = 86400000, KST_MS = 9 * 60 * 60 * 1000;
+  var RESET_WARN_DAYS = 7;   // 남은 날짜를 빨강으로 칠하기 시작하는 날(10/2 사용자 지시 3 → 7)
   function nowMs(now) {
     if (now instanceof Date) return now.getTime();
     return typeof now === 'number' && isFinite(now) ? now : Date.now();
@@ -194,11 +195,17 @@ var AIUsageUI = (function () {
     } else return null;
     var text = past ? '기한 경과 · 재확인 필요' : days <= 0 ? '오늘 만료' :
       days + '일 남음' + (days <= 3 ? ' · 만료 임박' : '');
-    return { label: e, text: text, urgent: past || days <= 3 };
+    return { label: e, text: text, urgent: past || days <= RESET_WARN_DAYS };
   }
-  function nb(parts) {
+  function nb(parts, cls) {
     // 좁은 칸에서 「21 / 일 남음」처럼 조각 가운데가 끊기지 않게, · 사이에서만 줄을 바꾼다.
-    return parts.map(function (p) { return '<span class="aiu-nb">' + esc(p) + '</span>'; }).join(' · ');
+    return parts.map(function (p) {
+      return '<span class="aiu-nb' + (cls ? ' ' + cls : '') + '">' + esc(p) + '</span>';
+    }).join(' · ');
+  }
+  function dueHtml(due, suffix) {
+    // 날짜는 그대로 두고 남은 날짜 쪽만 빨강으로 칠한다(10/2 사용자 지시).
+    return nb([due.label + suffix]) + ' · ' + nb(due.text.split(' · '), due.urgent ? 'aiu-urgent' : '');
   }
   function creditsHtml(rc, now) {
     var known = rc && (rc.state === 'ok' || rc.state === 'stale');
@@ -218,15 +225,14 @@ var AIUsageUI = (function () {
       if (dated.length < n) out += '<div class="aiu-credits-note">' + n + '장 중 ' + dated.length + '장 만료일 확인</div>';
       else if (!rc.details_complete) out += '<div class="aiu-credits-note">만료일 목록 재확인 필요</div>';
       if (rows.length > 1 && dated.length) {
-        out += '<div class="aiu-credits-sub' + (dated[0].due.urgent ? ' aiu-urgent' : '') + '">가장 빠른 만료 ' +
-          nb([dated[0].due.label].concat(dated[0].due.text.split(' · '))) + '</div>';
+        out += '<div class="aiu-credits-sub">가장 빠른 만료 ' + dueHtml(dated[0].due, '') + '</div>';
       }
       out += '<ul>';
       rows.forEach(function (r) {
         var type = r.item ? r.item.reset_type : null;
         var name = Object.prototype.hasOwnProperty.call(RESET_TYPE_NAMES, type) ? RESET_TYPE_NAMES[type] : '초기화권';
-        out += '<li' + (r.due && r.due.urgent ? ' class="aiu-urgent"' : '') + '><b>' + esc(name) + '</b><span>' +
-          (r.due ? nb([r.due.label + ' 만료'].concat(r.due.text.split(' · '))) : '만료일 미확인') + '</span></li>';
+        out += '<li><b>' + esc(name) + '</b><span>' +
+          (r.due ? dueHtml(r.due, ' 만료') : '만료일 미확인') + '</span></li>';
       });
       out += '</ul>';
     }
@@ -270,7 +276,7 @@ var AIUsageUI = (function () {
     });
     out += '</div>';
     if (!slots.length) out += '<p class="aiu-empty">아직 수집된 값이 없습니다.</p>';
-    return out + '<p class="aiu-legend">80%부터 빨강 · 초기화권은 만료 3일 전부터 빨강 · 시각은 한국 시간</p>';
+    return out + '<p class="aiu-legend">80%부터 빨강 · 초기화권은 만료 7일 전부터 남은 날짜 빨강 · 시각은 한국 시간</p>';
   }
   function trend() {
     return '<details class="aiu-trend"><summary><span><strong>사용량 추이</strong>' +
