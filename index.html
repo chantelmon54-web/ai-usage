@@ -166,19 +166,44 @@ body.dark .aiu-view .aiu-calendar{--aiu-expiry:#e3bc74}
 @media(min-width:1000px){
   .aiu-view .aiu-calendar{padding:22px}
   .aiu-view .aiu-calendar-head strong{font-size:16px}
+  .aiu-view .aiu-calendar-tabs{gap:22px;padding:0;max-width:330px;background:transparent;border-bottom:1px solid var(--hub-border);border-radius:0}
+  .aiu-view .aiu-calendar-tabs button{border:0;border-bottom:3px solid transparent;border-radius:0;background:transparent;padding:10px 2px;font-size:14px;font-weight:600;margin-bottom:-1px;box-shadow:none}
+  .aiu-view .aiu-calendar-tabs button[aria-pressed=true]{background:transparent;border-color:var(--hub-accent);color:var(--hub-accent);font-weight:700}
+  .aiu-view .aiu-calendar-tabs button:hover{color:var(--hub-accent)}
   .aiu-view .aiu-month{display:grid;grid-template-columns:minmax(0,1fr) 245px;gap:24px}
   .aiu-view .aiu-calendar-grid{min-width:0}
   .aiu-view .aiu-selected{margin:0;padding:17px 0 0 22px;border-top:0;border-left:1px solid var(--hub-border)}
+  .aiu-view .aiu-calendar h3{font-size:14px;font-weight:600}
+  .aiu-view .aiu-event{font-size:14px}
+  .aiu-view .aiu-event-info>div:first-child{font-weight:600}
+  .aiu-view .aiu-event-date b{font-size:16px;font-weight:600}
+  .aiu-view .aiu-event-description{font-size:13px}
+  .aiu-view .aiu-event-date small,.aiu-view .aiu-event-info small,.aiu-view .aiu-event-due,.aiu-view .aiu-calendar .aiu-urgent,.aiu-view .aiu-event-stale{font-size:12px;font-weight:400}
+  .aiu-view .aiu-month-nav strong{font-size:16px}
+  .aiu-view .aiu-month-nav button{background:transparent;border-color:transparent;box-shadow:none}
+  .aiu-view .aiu-month-nav button:hover{background:var(--hub-surface-2)}
+  .aiu-view .aiu-month-nav [data-aiu-today]{font-size:12px;font-weight:600;border-color:var(--hub-border);padding:4px 10px}
+  .aiu-view .aiu-weekdays span{font-size:12px;font-weight:600}
   .aiu-view .aiu-days{gap:0;border-top:1px solid var(--hub-border);border-left:1px solid var(--hub-border);border-radius:8px;overflow:hidden}
-  .aiu-view .aiu-days .aiu-day,.aiu-view .aiu-day-blank{min-height:90px;align-items:stretch;gap:3px;padding:7px 4px;border-right:1px solid var(--hub-border);border-bottom:1px solid var(--hub-border);border-radius:0;text-align:left}
-  .aiu-view .aiu-day-number{padding-left:3px}
+  .aiu-view .aiu-days .aiu-day,.aiu-view .aiu-day-blank{min-height:98px;align-items:stretch;gap:4px;padding:7px 5px;border:0;border-right:1px solid var(--hub-border);border-bottom:1px solid var(--hub-border);border-radius:0;text-align:left;box-shadow:none}
+  .aiu-view .aiu-day:hover{background:var(--hub-surface-2)}
+  .aiu-view .aiu-day[aria-pressed=true]{background:color-mix(in srgb,var(--hub-accent) 7%,var(--hub-surface))}
+  .aiu-view .aiu-day-number{display:grid;place-items:center;width:28px;height:28px;border:1px solid transparent;border-radius:50%;font-size:14px;font-weight:600;line-height:1}
+  .aiu-view .aiu-day.aiu-today .aiu-day-number{text-decoration:none;border-color:var(--hub-accent)}
+  .aiu-view .aiu-day[aria-pressed=true] .aiu-day-number{background:var(--hub-accent);border-color:var(--hub-accent);color:var(--hub-surface);font-weight:700;text-decoration:none}
+  .aiu-view .aiu-days .aiu-day:focus-visible{outline-offset:-3px}
   .aiu-view .aiu-day-marks{display:none}
-  .aiu-view .aiu-day-event{display:block;border-radius:4px;background:color-mix(in srgb,var(--hub-accent) 13%,var(--hub-surface));padding:4px;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+  .aiu-view .aiu-day-event{display:block;border-radius:4px;background:color-mix(in srgb,var(--hub-accent) 13%,var(--hub-surface));padding:4px 6px;font-size:13px;font-weight:600;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere}
   .aiu-view .aiu-chip-expiry{background:color-mix(in srgb,var(--aiu-expiry) 14%,var(--hub-surface))}
-  .aiu-view .aiu-day-event small{display:block;font-size:11px;color:var(--hub-muted)}
-  .aiu-view .aiu-day-more{display:block;font-size:10px;color:var(--hub-muted);text-align:center}
+  .aiu-view .aiu-day-event small{display:block;font-size:12px;font-weight:400;color:var(--hub-muted)}
+  .aiu-view .aiu-day-more{display:block;font-size:11px;color:var(--hub-muted);text-align:center}
+  .aiu-view .aiu-calendar-legend,.aiu-view .aiu-calendar-foot,.aiu-view .aiu-schedule-notes{font-size:12px}
   .aiu-view .aiu-agenda{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:30px}
   .aiu-view .aiu-agenda>section+section{margin-top:0}
+}
+@media(min-width:1000px) and (max-width:1199px){
+  body:not(.aiu-page) .aiu-view .aiu-month{grid-template-columns:minmax(0,1fr)}
+  body:not(.aiu-page) .aiu-view .aiu-selected{border-left:0;border-top:1px solid var(--hub-border);padding:18px 0 0}
 }
 /* END AI_USAGE_CSS */
 </style>
@@ -503,8 +528,14 @@ var AIUsageUI = (function () {
   function syncFolds(root, state, save) {
     var details = Array.prototype.slice.call(root.querySelectorAll('details[data-aiu-fold]'));
     details.forEach(function (d) { state.folds[d.getAttribute('data-aiu-fold')] = d.open; });
-    root.querySelector('[data-aiu-all="close"]').disabled = details.every(function (d) { return !d.open; });
-    root.querySelector('[data-aiu-all="open"]').disabled = details.every(function (d) { return d.open; });
+    var opened = details.map(function (d) { return d.open; });
+    // 교체 전 계정 후보에는 일정 DOM이 없지만 전체 접기/펴기는 일정 상태도 포함한다.
+    if (!root.querySelector('[data-aiu-fold="schedule"]')) opened.push(state.folds.schedule);
+    ['close','open'].forEach(function (action) {
+      var button = root.querySelector('[data-aiu-all="' + action + '"]');
+      var disabled = opened.every(function (open) { return open === (action === 'open'); });
+      if (button.disabled !== disabled) button.disabled = disabled;
+    });
     if (save) { try { localStorage.setItem(FOLD_STORAGE, JSON.stringify(state.folds)); } catch (e) { /* 표시 기능은 유지 */ } }
   }
   function enhanceAccounts(host, state) {
@@ -539,16 +570,41 @@ var AIUsageUI = (function () {
     for (var i = 0; i < attrs.length; i++) if (active.hasAttribute(attrs[i])) return [attrs[i], active.getAttribute(attrs[i])];
     return null;
   }
+  // 같은 날짜·계정의 DOM은 남기고 바뀐 글자/속성만 갱신한다. 폴링 때 전체 재생성을 피한다.
+  function patchChildren(host, next) {
+    var keys = ['data-aiu-fold','data-aiu-day','data-aiu-tab','data-aiu-month','data-aiu-all'];
+    Array.prototype.slice.call(next.childNodes).forEach(function (fresh, i) {
+      var old = host.childNodes[i];
+      if (!old) { host.appendChild(fresh.cloneNode(true)); return; }
+      var same = old.nodeType === fresh.nodeType && old.nodeName === fresh.nodeName;
+      if (same && old.nodeType === 1) same = keys.every(function (key) { return old.getAttribute(key) === fresh.getAttribute(key); });
+      if (!same) { old.replaceWith(fresh.cloneNode(true)); return; }
+      if (old.nodeType !== 1) {
+        if (old.nodeValue !== fresh.nodeValue) old.nodeValue = fresh.nodeValue;
+        return;
+      }
+      Array.prototype.slice.call(old.attributes).forEach(function (a) { if (!fresh.hasAttribute(a.name)) old.removeAttribute(a.name); });
+      Array.prototype.slice.call(fresh.attributes).forEach(function (a) { if (old.getAttribute(a.name) !== a.value) old.setAttribute(a.name, a.value); });
+      patchChildren(old, fresh);
+    });
+    while (host.childNodes.length > next.childNodes.length) host.lastChild.remove();
+  }
   function paintMounted(root, state) {
     var focus = focusKey(root), cardHtml = cards(state.data, state.now);
     if (cardHtml !== state.cardHtml) {
-      state.cardHost.innerHTML = cardHtml; enhanceAccounts(state.cardHost, state); state.cardHtml = cardHtml;
+      var nextCards = document.createElement('div'); nextCards.innerHTML = cardHtml;
+      enhanceAccounts(nextCards, state); syncFolds(nextCards, state, false);
+      patchChildren(state.cardHost, nextCards); state.cardHtml = cardHtml;
     }
     var result = schedule(state.data, state.now), next = result.events[0];
     var nearest = next ? eventShort(next) : result.notes.length ? '일정 확인이 필요합니다 · 펼쳐서 확인' : '확인된 다음 일정이 없습니다.';
-    state.nearest.textContent = nearest; state.nearest.title = nearest;
+    if (state.nearest.textContent !== nearest) state.nearest.textContent = nearest;
+    if (state.nearest.title !== nearest) state.nearest.title = nearest;
     var html = calendarHtml(state, result);
-    if (html !== state.calendarHtml) { state.calendarBody.innerHTML = html; state.calendarHtml = html; }
+    if (html !== state.calendarHtml) {
+      var nextCalendar = document.createElement('div'); nextCalendar.innerHTML = html;
+      patchChildren(state.calendarBody, nextCalendar); state.calendarHtml = html;
+    }
     syncFolds(root, state, false);
     if (focus && !root.contains(document.activeElement)) {
       // 갱신/월 이동 뒤 키보드 위치를 유지한다. 값은 내부에서 만든 날짜·키만 사용한다.
