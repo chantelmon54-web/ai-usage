@@ -696,8 +696,13 @@ var DATA_URL = 'https://script.google.com/macros/s/AKfycbwZJh7CGtCfvuZ__rcN0M-kc
 var POLL_MS = 30000;          // 탭이 보일 때만 이 간격으로 다시 받는다
 var LAG_MINUTES = 6;          // 기준이 이보다 낡으면 「수집 지연」(수집은 2분 주기)
 var PROBE_URL = 'http://127.0.0.1:8765/report';   // ?probe=1 일 때만(다계정 자동 판정용)
+// ★GAS 첫 단계가 가끔 수십 초 늦게 답한다(PLAN 부록 B-9, 대부분은 1초 안).
+var HEDGE_MS = 5000;          // 이 안에 답이 없거나 실패하면 같은 요청을 한 번 더 보내 먼저 온 답을 쓴다
+var GIVE_UP_MS = 25000;       // 둘 다 이만큼 답이 없으면 실패로 보고 다음 주기에 다시 받는다
+var CACHE_KEY = 'aiUsageLastData';   // 마지막으로 받은 공개 JSON — 다시 열면 이것부터 보여 준다
 
 var last = null;              // 마지막으로 받은 값 — 실패해도 지우지 않는다
+var lastFromCache = false;    // 화면 값이 이번에 받은 값이 아니라 이 브라우저에 저장해 둔 값인가
 var failed = false;
 var inflight = false;
 var firstDone = false;
@@ -719,7 +724,9 @@ function renderMeta() {
     var age = ageMinutes(last.fetched_at);
     var html = '기준 ' + esc(String(last.fetched_at).slice(11, 16)) +
                (age === null ? '' : ' · ' + age + '분 전');
-    if (age !== null && age > LAG_MINUTES) html += '<span class="aiu-lag">수집 지연</span>';
+    // 저장해 둔 값의 나이는 이 브라우저가 마지막으로 받은 때라 수집 지연으로 보지 않는다.
+    if (lastFromCache) html += ' · 저장된 값' + (failed ? '' : ', 새 값 받는 중');
+    else if (age !== null && age > LAG_MINUTES) html += '<span class="aiu-lag">수집 지연</span>';
     meta.innerHTML = html;
   } else if (last) {
     meta.textContent = '아직 수집된 값이 없습니다. 운영 PC 수집기가 한 번 보내면 표시됩니다.';
@@ -749,23 +756,59 @@ function probe() {
   } catch (e) {}
 }
 
+function loadCache() {
+  try {
+    var d = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+    if (d && Array.isArray(d.slots)) { last = d; lastFromCache = true; }
+  } catch (e) {}
+}
+function saveCache(d) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify(d)); } catch (e) {}
+}
+
+/** 한 주기에 요청은 많아야 2번. 먼저 온 올바른 답을 쓰고 나머지는 버린다. */
 function tick() {
   if (inflight) return;
   inflight = true;
-  // ★credentials:'omit' — 구글 쿠키를 안 보내야 다계정 계정 돌리기(/u/N/ 404)를 안 탄다.
-  fetch(DATA_URL, { credentials: 'omit', cache: 'no-store' })
-    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(function (d) {
-      if (!d || !Array.isArray(d.slots)) throw new Error('형식이 다름');
-      last = d;
-      failed = false;
-    })
-    .catch(function () { failed = true; })
-    .then(function () {
-      inflight = false;
-      render();
-      if (!firstDone) { firstDone = true; probe(); }
-    });
+  var done = false, sent = 0, lost = 0, ctrls = [];
+  var hedge = setTimeout(send, HEDGE_MS);
+  var giveUp = setTimeout(function () { finish(null); }, GIVE_UP_MS);
+  function finish(d) {
+    if (done) return;
+    done = true;
+    clearTimeout(hedge);
+    clearTimeout(giveUp);
+    ctrls.forEach(function (c) { try { c.abort(); } catch (e) {} });
+    if (d) { last = d; lastFromCache = false; failed = false; saveCache(d); }
+    else failed = true;
+    inflight = false;
+    render();
+    if (!firstDone) { firstDone = true; probe(); }
+  }
+  function send() {
+    if (done || sent >= 2) return;
+    sent++;
+    // ★credentials:'omit' — 구글 쿠키를 안 보내야 다계정 계정 돌리기(/u/N/ 404)를 안 탄다.
+    var opts = { credentials: 'omit', cache: 'no-store' };
+    if (typeof AbortController === 'function') {
+      var c = new AbortController();
+      ctrls.push(c);
+      opts.signal = c.signal;
+    }
+    fetch(DATA_URL, opts)
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (d) {
+        if (!d || !Array.isArray(d.slots)) throw new Error('형식이 다름');
+        finish(d);
+      })
+      .catch(function () {
+        if (done) return;
+        lost++;
+        if (sent < 2) { clearTimeout(hedge); send(); }   // 빨리 실패하면 5초를 기다리지 않는다
+        else if (lost >= sent) finish(null);
+      });
+  }
+  send();
 }
 
 function schedule() {
@@ -816,6 +859,8 @@ function lb() {
 
 applyTheme();
 setInterval(applyTheme, 60000);   // 일출·일몰 경계를 1분 안에 따라간다
+loadCache();
+render();                         // 저장해 둔 값이 있으면 답을 기다리지 않고 먼저 그린다
 tick();
 schedule();
 </script>
