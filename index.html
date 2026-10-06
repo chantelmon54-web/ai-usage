@@ -279,6 +279,7 @@ var AIUsageUI = (function () {
   var RESET_TYPE_NAMES = { codex_rate_limits: '전체 재설정' };
   var DAY_MS = 86400000, KST_MS = 9 * 60 * 60 * 1000;
   var RESET_WARN_DAYS = 7;   // 남은 날짜를 빨강으로 칠하기 시작하는 날(10/2 사용자 지시 3 → 7)
+  var RESET_MERGE_MS = 60000;   // 같은 계정·도구의 주간 범위 리셋을 한 건으로 보는 차이(10/6 사용자 「4개여야」)
   function nowMs(now) {
     if (now instanceof Date) return now.getTime();
     return typeof now === 'number' && isFinite(now) ? now : Date.now();
@@ -411,7 +412,7 @@ var AIUsageUI = (function () {
     slots.forEach(function (s) {
       if (s.owner !== 'telmon0001' && s.owner !== 'dombom4483') return;
       var who = ownerName(s.owner), tool = s.tool_name || s.tool || '', prefix = who + ' ' + tool;
-      var groups = {}, limits = Array.isArray(s.limits) ? s.limits : [];
+      var groups = [], limits = Array.isArray(s.limits) ? s.limits : [];
       function event(t, kind, label, dateOnly, stale) {
         return { time: t, day: dayKey(kstDay(t)), kind: kind, label: label, owner: who, tool: tool,
           plan: s.plan || '', dateOnly: dateOnly, stale: stale, count: 1 };
@@ -423,13 +424,14 @@ var AIUsageUI = (function () {
           var t = scheduleTime(l.resets_at, 'second');
           if (!isFinite(t)) { note(prefix + ' · 리셋 시각 미확인'); return; }
           if (t <= now) { note(prefix + ' · 리셋 시각 경과, 재확인 필요'); return; }
-          var key = String(t), e = groups[key];
-          if (!e) { e = event(t, 'reset', '주간 리셋', false, !!s.stale); e.scopes = []; groups[key] = e; }
+          // 원천이 범위마다 소수점 초를 달리 줘서 같은 리셋이 03:59:59·04:00:00으로 갈린다. 1분 안이면 한 건, 늦은 시각으로 표시한다.
+          var e = groups.filter(function (g) { return Math.abs(g.time - t) <= RESET_MERGE_MS; })[0];
+          if (!e) { e = event(t, 'reset', '주간 리셋', false, !!s.stale); e.scopes = []; groups.push(e); }
+          else if (t > e.time) { e.time = t; e.day = dayKey(kstDay(t)); }
           var scope = l.kind === 'weekly_all' || l.name === '주간' ? '전체' : String(l.name || '주간').replace(/^주간\s*/, '');
           if (e.scopes.indexOf(scope) < 0) e.scopes.push(scope);
         });
-        Object.keys(groups).forEach(function (key) {
-          var e = groups[key];
+        groups.forEach(function (e) {
           e.label = '주간 ' + (e.scopes.length === 1 && e.scopes[0] === '전체' ? '' : e.scopes.join('·') + ' ') + '리셋';
           events.push(e);
         });
