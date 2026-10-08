@@ -358,7 +358,7 @@ var AIUsageUI = (function () {
       var accountSlots = slots.filter(function (s) { return s.owner === owner; });
       if (!accountSlots.length) return;
       out += '<section class="aiu-account" aria-label="' + esc(owner) + ' 계정">' +
-        '<div class="aiu-account-head"><h3>' + (owner === 'telmon0001' ? '텔몬' : '돔봄') +
+        '<div class="aiu-account-head"><h3>' + (owner === 'telmon0001' ? '돔봄사업부' : '텔몬사업부') +
         '</h3><span class="aiu-owner">' + esc(owner) + '</span></div><div class="aiu-account-cards">';
       accountSlots.forEach(function (s) {
         out += '<article class="aiu-card"><div class="aiu-card-head"><h4>' + esc(s.tool_name || s.tool || '') +
