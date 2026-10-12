@@ -102,15 +102,15 @@ border:1px solid var(--hub-border);border-radius:10px;padding:8px 14px;min-heigh
 .aiu-view .aiu-fold-toolbar{display:flex;gap:6px;align-items:center}
 .aiu-view .aiu-fold-toolbar button,.aiu-view .aiu-calendar button{font:inherit;color:var(--hub-text);cursor:pointer}
 .aiu-view .aiu-fold-toolbar button{font-size:12px;border:1px solid var(--hub-border-strong);background:var(--hub-surface);border-radius:7px;min-height:38px;padding:7px 11px;white-space:nowrap}
-.aiu-view .aiu-fold-toolbar button:disabled{opacity:.45;cursor:default}
 .aiu-view .aiu-collapse-head{list-style:none;display:flex;cursor:pointer;align-items:center;flex-wrap:wrap;gap:5px 10px;min-height:48px}
 .aiu-view .aiu-collapse-head::-webkit-details-marker{display:none}
 .aiu-view .aiu-fold-title{display:flex;align-items:baseline;gap:9px;flex:1;min-width:0;flex-wrap:wrap}
 .aiu-view .aiu-fold-action{margin-left:auto;font-size:11px;color:var(--hub-muted);font-weight:400;white-space:nowrap}
 .aiu-view .aiu-fold-action:after{content:'접기 ⌃'}
 .aiu-view details:not([open])>.aiu-collapse-head .aiu-fold-action:after{content:'펴기 ⌄'}
-.aiu-view .aiu-account-summary{display:flex;gap:5px;align-items:center;flex-wrap:wrap;width:100%;font-size:12px;font-weight:400;margin-top:3px;color:var(--hub-text)}
-.aiu-view .aiu-account-summary b{font-variant-numeric:tabular-nums;font-weight:700}
+.aiu-view .aiu-account-summary{display:flex;gap:6px 20px;align-items:baseline;flex-wrap:wrap;width:100%;font-size:14px;font-weight:400;margin-top:5px;color:var(--hub-text)}
+.aiu-view .aiu-summary-metric{display:inline-flex;align-items:baseline;gap:7px;white-space:nowrap}
+.aiu-view .aiu-account-summary b{font-size:22px;font-variant-numeric:tabular-nums;font-weight:700;color:var(--hub-strong)}
 .aiu-view .aiu-account-summary .aiu-summary-crit{color:var(--hub-bad-ink)}
 .aiu-view .aiu-collapsible[open] .aiu-account-summary,.aiu-view .aiu-collapsible[open] .aiu-nearest{display:none}
 .aiu-view .aiu-collapsible:not([open])>.aiu-account-head{border-bottom:0;background:var(--hub-surface)}
@@ -119,7 +119,10 @@ border:1px solid var(--hub-border);border-radius:10px;padding:8px 14px;min-heigh
 body.dark .aiu-view .aiu-calendar{--aiu-expiry:#e3bc74}
 .aiu-view .aiu-calendar-head{padding:2px 0}
 .aiu-view .aiu-calendar-head strong{font-size:15px;color:var(--hub-strong)}
-.aiu-view .aiu-nearest{width:100%;display:block;font-size:12px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400;color:var(--hub-muted);font-variant-numeric:tabular-nums}
+.aiu-view .aiu-nearest{width:100%;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;font-size:13px;margin-top:5px;font-weight:400;color:var(--hub-muted);font-variant-numeric:tabular-nums}
+.aiu-view .aiu-nearest-time{font-size:20px;font-weight:700;color:var(--hub-strong);white-space:nowrap}
+.aiu-view .aiu-nearest-time:empty{display:none}
+.aiu-view .aiu-nearest-label{min-width:0;white-space:normal;overflow-wrap:anywhere}
 .aiu-view .aiu-calendar-body{padding-top:14px}
 .aiu-view .aiu-calendar [hidden]{display:none!important}
 .aiu-view .aiu-calendar-tabs{display:flex;gap:4px;padding:3px;margin-bottom:20px;max-width:390px;background:var(--hub-surface-2);border-radius:9px}
@@ -163,6 +166,7 @@ body.dark .aiu-view .aiu-calendar{--aiu-expiry:#e3bc74}
 .aiu-view .aiu-calendar-foot{font-size:11px;color:var(--hub-muted);margin:17px 0 0}
 .aiu-view .aiu-collapse-head:focus-visible,.aiu-view .aiu-calendar button:focus-visible,.aiu-view .aiu-fold-toolbar button:focus-visible{outline:2px solid var(--hub-accent);outline-offset:2px}
 @media(pointer:coarse){.aiu-view .aiu-fold-toolbar button,.aiu-view .aiu-month-nav button{min-height:44px}}
+@media(max-width:560px){.aiu-view .aiu-nearest-label{flex-basis:100%}}
 @media(min-width:1000px){
   .aiu-view .aiu-calendar{padding:22px}
   .aiu-view .aiu-calendar-head strong{font-size:16px}
@@ -533,16 +537,15 @@ var AIUsageUI = (function () {
     var opened = details.map(function (d) { return d.open; });
     // 교체 전 계정 후보에는 일정 DOM이 없지만 전체 접기/펴기는 일정 상태도 포함한다.
     if (!root.querySelector('[data-aiu-fold="schedule"]')) opened.push(state.folds.schedule);
-    ['close','open'].forEach(function (action) {
-      var button = root.querySelector('[data-aiu-all="' + action + '"]');
-      var disabled = opened.every(function (open) { return open === (action === 'open'); });
-      if (button.disabled !== disabled) button.disabled = disabled;
-    });
+    var button = root.querySelector('[data-aiu-all="toggle"]'), allOpen = opened.every(function (open) { return open; });
+    var label = allOpen ? '전체 접기' : '전체 펴기', expanded = String(allOpen);
+    if (button.textContent !== label) button.textContent = label;
+    if (button.getAttribute('aria-expanded') !== expanded) button.setAttribute('aria-expanded', expanded);
     if (save) { try { localStorage.setItem(FOLD_STORAGE, JSON.stringify(state.folds)); } catch (e) { /* 표시 기능은 유지 */ } }
   }
   function enhanceAccounts(host, state) {
     host.querySelector('.aiu-section-head>span').outerHTML = '<div class="aiu-fold-toolbar" role="group" aria-label="모든 카드와 일정 접기·펴기">' +
-      '<button type="button" data-aiu-all="close">전체 접기</button><button type="button" data-aiu-all="open">전체 펴기</button></div>';
+      '<button type="button" data-aiu-all="toggle">전체 접기</button></div>';
     host.querySelectorAll('.aiu-account').forEach(function (account) {
       var old = account.querySelector('.aiu-account-head'), content = account.querySelector('.aiu-account-cards');
       var owner = old.querySelector('.aiu-owner').textContent, details = document.createElement('details');
@@ -554,9 +557,10 @@ var AIUsageUI = (function () {
       content.querySelectorAll('.aiu-card').forEach(function (card, i) {
         var value = card.querySelector('.aiu-primary .aiu-value'), primary = card.querySelector('.aiu-primary');
         var line = document.createElement('span'), number = document.createElement('b');
+        line.className = 'aiu-summary-metric';
         number.textContent = value ? value.textContent : '확인 안 됨';
         if (primary && primary.classList.contains('aiu-state-crit')) number.className = 'aiu-summary-crit';
-        if (i) short.appendChild(document.createTextNode(' · '));
+        if (i) short.appendChild(document.createTextNode(' '));
         line.appendChild(document.createTextNode(card.querySelector('h4').textContent + ' ')); line.appendChild(number);
         if (card.querySelector('.aiu-stale')) line.appendChild(document.createTextNode(' (지난값)'));
         short.appendChild(line);
@@ -600,7 +604,9 @@ var AIUsageUI = (function () {
     }
     var result = schedule(state.data, state.now), next = result.events[0];
     var nearest = next ? eventShort(next) : result.notes.length ? '일정 확인이 필요합니다 · 펼쳐서 확인' : '확인된 다음 일정이 없습니다.';
-    if (state.nearest.textContent !== nearest) state.nearest.textContent = nearest;
+    var nearestTime = next ? nearest.split(' · ')[0] : '', nearestLabel = next ? ' ' + nearest.slice(nearestTime.length + 3) : nearest;
+    if (state.nearestTime.textContent !== nearestTime) state.nearestTime.textContent = nearestTime;
+    if (state.nearestLabel.textContent !== nearestLabel) state.nearestLabel.textContent = nearestLabel;
     if (state.nearest.title !== nearest) state.nearest.title = nearest;
     var html = calendarHtml(state, result);
     if (html !== state.calendarHtml) {
@@ -623,9 +629,10 @@ var AIUsageUI = (function () {
       root._aiUsageView = state;
       root.innerHTML = '<div class="aiu-card-host"></div><details class="aiu-calendar aiu-collapsible" data-aiu-fold="schedule" aria-label="리셋·만료 일정">' +
         '<summary class="aiu-calendar-head aiu-collapse-head"><span class="aiu-fold-title"><strong>리셋·만료 일정</strong></span>' +
-        '<span class="aiu-fold-action" aria-hidden="true"></span><span class="aiu-nearest"></span></summary><div class="aiu-calendar-body"></div></details>';
+        '<span class="aiu-fold-action" aria-hidden="true"></span><span class="aiu-nearest"><b class="aiu-nearest-time"></b><span class="aiu-nearest-label"></span></span></summary><div class="aiu-calendar-body"></div></details>';
       state.cardHost = root.querySelector('.aiu-card-host'); state.calendarBody = root.querySelector('.aiu-calendar-body');
-      state.nearest = root.querySelector('.aiu-nearest'); root.querySelector('.aiu-calendar').open = state.folds.schedule;
+      state.nearest = root.querySelector('.aiu-nearest'); state.nearestTime = root.querySelector('.aiu-nearest-time');
+      state.nearestLabel = root.querySelector('.aiu-nearest-label'); root.querySelector('.aiu-calendar').open = state.folds.schedule;
       root.addEventListener('click', function (ev) {
         var summary = ev.target.closest('summary');
         if (summary && summary.parentElement.hasAttribute('data-aiu-fold')) {
@@ -633,7 +640,9 @@ var AIUsageUI = (function () {
         }
         var b = ev.target.closest('button'); if (!b || !root.contains(b)) return;
         if (b.hasAttribute('data-aiu-all')) {
-          root.querySelectorAll('details[data-aiu-fold]').forEach(function (d) { d.open = b.getAttribute('data-aiu-all') === 'open'; });
+          var details = Array.prototype.slice.call(root.querySelectorAll('details[data-aiu-fold]'));
+          var open = !details.every(function (d) { return d.open; });
+          details.forEach(function (d) { d.open = open; });
           syncFolds(root, state, true); return;
         }
         if (b.hasAttribute('data-aiu-tab')) state.tab = b.getAttribute('data-aiu-tab');
