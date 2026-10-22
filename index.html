@@ -271,8 +271,11 @@ var AIUsageUI = (function () {
   }
   // 사용률 0인데 리셋 시각이 없음 = 그 창이 아직 시작되지 않았다(첫 사용부터 센다). 조회 실패가 아니다(10/22 돔봄 클로드 세션).
   function notStarted(l) { return !l.resets_at && percent(l.percent) === 0; }
+  // 5시간 창(클로드 세션·코덱스 「5시간」)은 늘 하루 안에 리셋된다 — 남은 시간 빨강에서 뺀다(10/22 사용자).
+  function shortWindow(l) { return l.kind === 'session' || /^\d+시간/.test(l.name || ''); }
   function limitHtml(l, main, now) {
-    var p = percent(l.percent), t = tone(p), reset = shortTime(l.resets_at);
+    var p = percent(l.percent), t = tone(p), reset = shortTime(l.resets_at), left = remain(Date.parse(l.resets_at), now);
+    if (left && shortWindow(l)) left.urgent = false;
     var status = p === null ? '확인 안 됨' : p >= 100 ? '한도 도달' : p >= 80 ? '사용량 높음' : '';
     var out = '<div class="aiu-limit ' + (main ? 'aiu-primary ' : 'aiu-secondary ') + 'aiu-state-' + t + '">';
     out += '<div class="aiu-limit-head"><span>' + esc(l.name || '사용 한도') + '</span>';
@@ -288,7 +291,7 @@ var AIUsageUI = (function () {
         '" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.min(p, 100) +
         '" aria-valuetext="' + esc(p) + '% ' + status + '"><i style="width:' + Math.min(p, 100) + '%"></i></div>';
     }
-    out += '<div class="aiu-reset">' + (reset ? esc(reset) + ' 리셋' + remainHtml(remain(Date.parse(l.resets_at), now), ' · ') : notStarted(l) ? '사용 전 · 첫 사용부터 시작' : '리셋 시각 미확인') + '</div></div>';
+    out += '<div class="aiu-reset">' + (reset ? esc(reset) + ' 리셋' + remainHtml(left, ' · ') : notStarted(l) ? '사용 전 · 첫 사용부터 시작' : '리셋 시각 미확인') + '</div></div>';
     return out;
   }
   /* 초기화권(PLAN §5-18 코덱스·§5-21 클로드). 상태는 수집기가 정하고 여기서는 표시만 한다.
