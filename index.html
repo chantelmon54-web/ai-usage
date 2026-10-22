@@ -262,6 +262,8 @@ var AIUsageUI = (function () {
     if (weekly < 0) weekly = limits.findIndex(function (l) { return l.name === '주간'; });
     return weekly < 0 ? 0 : weekly;
   }
+  // 사용률 0인데 리셋 시각이 없음 = 그 창이 아직 시작되지 않았다(첫 사용부터 센다). 조회 실패가 아니다(10/22 돔봄 클로드 세션).
+  function notStarted(l) { return !l.resets_at && percent(l.percent) === 0; }
   function limitHtml(l, main) {
     var p = percent(l.percent), t = tone(p), reset = shortTime(l.resets_at);
     var status = p === null ? '확인 안 됨' : p >= 100 ? '한도 도달' : p >= 80 ? '사용량 높음' : '';
@@ -279,7 +281,7 @@ var AIUsageUI = (function () {
         '" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.min(p, 100) +
         '" aria-valuetext="' + esc(p) + '% ' + status + '"><i style="width:' + Math.min(p, 100) + '%"></i></div>';
     }
-    out += '<div class="aiu-reset">' + (reset ? esc(reset) + ' 리셋' : '리셋 시각 미확인') + '</div></div>';
+    out += '<div class="aiu-reset">' + (reset ? esc(reset) + ' 리셋' : notStarted(l) ? '사용 전 · 첫 사용부터 시작' : '리셋 시각 미확인') + '</div></div>';
     return out;
   }
   /* 초기화권(PLAN §5-18 코덱스·§5-21 클로드). 상태는 수집기가 정하고 여기서는 표시만 한다.
@@ -432,7 +434,7 @@ var AIUsageUI = (function () {
         if (!weekly.length) note(prefix + ' · 주간 리셋 미확인');
         weekly.forEach(function (l) {
           var t = scheduleTime(l.resets_at, 'second');
-          if (!isFinite(t)) { note(prefix + ' · 리셋 시각 미확인'); return; }
+          if (!isFinite(t)) { if (!notStarted(l)) note(prefix + ' · 리셋 시각 미확인'); return; }
           if (t <= now) { note(prefix + ' · 리셋 시각 경과, 재확인 필요'); return; }
           // 원천이 범위마다 소수점 초를 달리 줘서 같은 리셋이 03:59:59·04:00:00으로 갈린다. 1분 안이면 한 건, 늦은 시각으로 표시한다.
           var e = groups.filter(function (g) { return Math.abs(g.time - t) <= RESET_MERGE_MS; })[0];
