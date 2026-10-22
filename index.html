@@ -59,6 +59,8 @@ border:1px solid var(--hub-border);border-radius:10px;padding:8px 14px;min-heigh
 .aiu-view .aiu-state-crit .aiu-track i{background:var(--hub-bad)}
 .aiu-view .aiu-state-crit .aiu-value,.aiu-view .aiu-state-crit .aiu-small-value{color:var(--hub-bad-ink)}
 .aiu-view .aiu-reset{color:var(--hub-muted);font-size:11px;margin-top:7px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+/* 리셋·만료까지 남은 시간(10/22) — 하루 미만은 빨강. 카드·접힌 계정 요약 공통. */
+.aiu-view .aiu-remain.aiu-urgent{color:var(--hub-bad-ink)}
 .aiu-view .aiu-other-limits{border-top:1px solid var(--hub-border);margin-top:18px;padding-top:13px;display:grid;gap:12px}
 .aiu-view .aiu-small-value{font-weight:700;font-variant-numeric:tabular-nums}
 .aiu-view .aiu-secondary .aiu-track{height:4px;margin-top:6px}
@@ -127,6 +129,11 @@ body.dark .aiu-view .aiu-calendar{--aiu-expiry:#e3bc74}
 .aiu-view .aiu-nearest-time{font-size:20px;font-weight:700;color:var(--hub-strong);white-space:nowrap}
 .aiu-view .aiu-nearest-time:empty{display:none}
 .aiu-view .aiu-nearest-label{min-width:0;white-space:normal;overflow-wrap:anywhere}
+.aiu-view .aiu-account-summary .aiu-remain{font-size:13px;color:var(--hub-muted)}
+.aiu-view .aiu-account-summary .aiu-remain.aiu-urgent{color:var(--hub-bad-ink)}
+.aiu-view .aiu-calendar .aiu-nearest .aiu-nearest-remain{font-size:14px;font-weight:700;white-space:nowrap;color:var(--hub-text)}
+.aiu-view .aiu-calendar .aiu-nearest .aiu-nearest-remain.aiu-urgent{color:var(--hub-bad-ink)}
+.aiu-view .aiu-nearest-remain:empty{display:none}
 .aiu-view .aiu-calendar-body{padding-top:14px}
 .aiu-view .aiu-calendar [hidden]{display:none!important}
 .aiu-view .aiu-calendar-tabs{display:flex;gap:4px;padding:3px;margin-bottom:20px;max-width:390px;background:var(--hub-surface-2);border-radius:9px}
@@ -264,7 +271,7 @@ var AIUsageUI = (function () {
   }
   // 사용률 0인데 리셋 시각이 없음 = 그 창이 아직 시작되지 않았다(첫 사용부터 센다). 조회 실패가 아니다(10/22 돔봄 클로드 세션).
   function notStarted(l) { return !l.resets_at && percent(l.percent) === 0; }
-  function limitHtml(l, main) {
+  function limitHtml(l, main, now) {
     var p = percent(l.percent), t = tone(p), reset = shortTime(l.resets_at);
     var status = p === null ? '확인 안 됨' : p >= 100 ? '한도 도달' : p >= 80 ? '사용량 높음' : '';
     var out = '<div class="aiu-limit ' + (main ? 'aiu-primary ' : 'aiu-secondary ') + 'aiu-state-' + t + '">';
@@ -281,7 +288,7 @@ var AIUsageUI = (function () {
         '" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.min(p, 100) +
         '" aria-valuetext="' + esc(p) + '% ' + status + '"><i style="width:' + Math.min(p, 100) + '%"></i></div>';
     }
-    out += '<div class="aiu-reset">' + (reset ? esc(reset) + ' 리셋' : notStarted(l) ? '사용 전 · 첫 사용부터 시작' : '리셋 시각 미확인') + '</div></div>';
+    out += '<div class="aiu-reset">' + (reset ? esc(reset) + ' 리셋' + remainHtml(remain(Date.parse(l.resets_at), now), ' · ') : notStarted(l) ? '사용 전 · 첫 사용부터 시작' : '리셋 시각 미확인') + '</div></div>';
     return out;
   }
   /* 초기화권(PLAN §5-18 코덱스·§5-21 클로드). 상태는 수집기가 정하고 여기서는 표시만 한다.
@@ -295,6 +302,18 @@ var AIUsageUI = (function () {
     return typeof now === 'number' && isFinite(now) ? now : Date.now();
   }
   function kstDay(ms) { return Math.floor((ms + KST_MS) / DAY_MS); }
+  /* 남은 시간(10/22 사용자 지시, 카드·초기화권·일정·접힌 요약 공통): 하루 이상 = 한국 달력 날짜 차이 「N일 남음」,
+   * 하루 미만 = 「N시간 남음」(1시간 미만 「N분 남음」) 빨강. 지난 시각은 null — 경과 표시는 각 자리의 기존 규칙. */
+  function remain(t, now) {
+    var ms = t - now;
+    if (!isFinite(ms) || ms <= 0) return null;
+    if (ms >= DAY_MS) return { text: (kstDay(t) - kstDay(now)) + '일 남음', urgent: false };
+    var h = Math.floor(ms / 3600000);
+    return { text: h ? h + '시간 남음' : Math.ceil(ms / 60000) + '분 남음', urgent: true };
+  }
+  function remainHtml(r, prefix) {
+    return r ? prefix + '<span class="aiu-remain' + (r.urgent ? ' aiu-urgent' : '') + '">' + esc(r.text) + '</span>' : '';
+  }
   // 브라우저 Date.parse 는 아무 글이나 날짜로 읽기도 한다. ISO 시각 모양일 때만 시각으로 본다.
   function isoMs(s) {
     return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s) ? Date.parse(s) : NaN;
@@ -304,16 +323,16 @@ var AIUsageUI = (function () {
   }
   function creditDue(item, now) {
     // {label, text, urgent}. 만료를 읽지 못하면 null.
-    var e = item ? item.expires_at : null, p = item ? item.expires_precision : null, days, past;
+    var e = item ? item.expires_at : null, p = item ? item.expires_precision : null, days, past, soon;
     if (p === 'second' && !isNaN(isoMs(e))) {
       var t = isoMs(e);
-      past = t <= now; days = kstDay(t) - kstDay(now);
+      past = t <= now; days = kstDay(t) - kstDay(now); soon = remain(t, now);
       e = shortTime(e);
     } else if (p === 'date' && typeof e === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(e)) {
       days = Math.round(Date.UTC(+e.slice(0, 4), +e.slice(5, 7) - 1, +e.slice(8, 10)) / DAY_MS) - kstDay(now);
       past = days < 0; e = e.slice(5);
     } else return null;
-    var text = past ? '기한 경과 · 재확인 필요' : days <= 0 ? '오늘 만료' :
+    var text = past ? '기한 경과 · 재확인 필요' : soon && soon.urgent ? soon.text : days <= 0 ? '오늘 만료' :
       days + '일 남음' + (days <= 3 ? ' · 만료 임박' : '');
     return { label: e, text: text, urgent: past || days <= RESET_WARN_DAYS };
   }
@@ -383,10 +402,10 @@ var AIUsageUI = (function () {
           if (!limits.length) out += '<div class="aiu-missing">—</div><div class="aiu-empty">한도 정보가 없습니다</div>';
           else {
             var selected = mainIndex(limits);
-            out += limitHtml(limits[selected], true);
+            out += limitHtml(limits[selected], true, now);
             if (limits.length > 1) {
               out += '<div class="aiu-other-limits">';
-              limits.forEach(function (l, i) { if (i !== selected) out += limitHtml(l, false); });
+              limits.forEach(function (l, i) { if (i !== selected) out += limitHtml(l, false, now); });
               out += '</div>';
             }
           }
@@ -415,7 +434,8 @@ var AIUsageUI = (function () {
         (s.charAt(16) === ':' && Number(s.slice(17, 19)) > 59)) return NaN;
     return isoMs(s);
   }
-  function ownerName(owner) { return owner === 'telmon0001' ? '텔몬' : owner === 'dombom4483' ? '돔봄' : owner; }
+  // 일정 이름 = 카드 제목과 같은 사용 사업부(10/22 사용자 결정 — 10/8 에는 계정 별칭을 남겼었다).
+  function ownerName(owner) { return owner === 'telmon0001' ? '돔봄' : owner === 'dombom4483' ? '텔몬' : owner; }
   function schedule(data, now) {
     now = nowMs(now);
     var events = [], notes = [], slots = data && Array.isArray(data.slots) ? data.slots : [];
@@ -477,6 +497,8 @@ var AIUsageUI = (function () {
     return { events: events, notes: notes };
   }
   function eventTime(e) { return e.dateOnly ? '시각 미제공' : shortTime(new Date(e.time).toISOString()).slice(6); }
+  // 초기화권은 기존 만료 규칙(7일 전 빨강·날짜만 온 만료)을 따르고, 리셋은 공통 남은 시간.
+  function eventRemain(e, now) { return e.kind === 'expiry' ? e.due : remain(e.time, now); }
   function eventShort(e) {
     return Number(e.day.slice(5, 7)) + '/' + Number(e.day.slice(8)) + (e.dateOnly ? '' : ' ' + eventTime(e)) +
       ' · ' + e.owner + ' ' + e.tool + ' ' + (e.kind === 'reset' ? '주간 리셋' : '초기화권 만료') + (e.stale ? ' (지난값)' : '');
@@ -487,7 +509,8 @@ var AIUsageUI = (function () {
       Number(e.day.slice(5, 7)) + '/' + Number(e.day.slice(8)) + '</b><small>' + relative + '</small></div><div class="aiu-event-info"><div>' +
       esc(e.owner + ' · ' + e.tool) + ' <small>' + esc(e.plan) + '</small></div><div class="aiu-event-description"><b>' +
       esc(eventTime(e)) + '</b> ' + esc(e.label + (e.kind === 'expiry' ? ' · ' + e.resetType + ' 1장' : '')) + '</div>';
-    if (e.due) out += '<div class="aiu-event-due' + (e.due.urgent ? ' aiu-urgent' : '') + '">' + esc(e.due.text) + '</div>';
+    var r = eventRemain(e, now);
+    if (r) out += '<div class="aiu-event-due' + (r.urgent ? ' aiu-urgent' : '') + '">' + esc(r.text) + '</div>';
     if (e.stale) out += '<div class="aiu-event-stale">지난 확인값 · 재확인 필요</div>';
     return out + '</div></li>';
   }
@@ -572,6 +595,9 @@ var AIUsageUI = (function () {
         if (primary && primary.classList.contains('aiu-state-crit')) number.className = 'aiu-summary-crit';
         if (i) short.appendChild(document.createTextNode(' '));
         line.appendChild(document.createTextNode(card.querySelector('h4').textContent + ' ')); line.appendChild(number);
+        // 접혀도 대표 한도의 리셋까지 남은 시간을 보인다(10/22). 카드에 그린 것을 그대로 옮긴다.
+        var left = primary && primary.querySelector('.aiu-reset .aiu-remain');
+        if (left) { line.appendChild(document.createTextNode(' · ')); line.appendChild(left.cloneNode(true)); }
         if (card.querySelector('.aiu-stale')) line.appendChild(document.createTextNode(' (지난값)'));
         short.appendChild(line);
       });
@@ -617,6 +643,11 @@ var AIUsageUI = (function () {
     var nearestTime = next ? nearest.split(' · ')[0] : '', nearestLabel = next ? ' ' + nearest.slice(nearestTime.length + 3) : nearest;
     if (state.nearestTime.textContent !== nearestTime) state.nearestTime.textContent = nearestTime;
     if (state.nearestLabel.textContent !== nearestLabel) state.nearestLabel.textContent = nearestLabel;
+    var left = next ? eventRemain(next, state.now) : null, leftText = left ? left.text : '';
+    var leftClass = 'aiu-nearest-remain' + (left && left.urgent ? ' aiu-urgent' : '');
+    if (state.nearestRemain.textContent !== leftText) state.nearestRemain.textContent = leftText;
+    if (state.nearestRemain.className !== leftClass) state.nearestRemain.className = leftClass;
+    if (left) nearest = nearestTime + ' · ' + leftText + ' ·' + nearestLabel;
     if (state.nearest.title !== nearest) state.nearest.title = nearest;
     var html = calendarHtml(state, result);
     if (html !== state.calendarHtml) {
@@ -639,10 +670,11 @@ var AIUsageUI = (function () {
       root._aiUsageView = state;
       root.innerHTML = '<div class="aiu-card-host"></div><details class="aiu-calendar aiu-collapsible" data-aiu-fold="schedule" aria-label="리셋·만료 일정">' +
         '<summary class="aiu-calendar-head aiu-collapse-head"><span class="aiu-fold-title"><strong>리셋·만료 일정</strong></span>' +
-        '<span class="aiu-fold-action" aria-hidden="true"></span><span class="aiu-nearest"><b class="aiu-nearest-time"></b><span class="aiu-nearest-label"></span></span></summary><div class="aiu-calendar-body"></div></details>';
+        '<span class="aiu-fold-action" aria-hidden="true"></span><span class="aiu-nearest"><b class="aiu-nearest-time"></b><span class="aiu-nearest-remain"></span><span class="aiu-nearest-label"></span></span></summary><div class="aiu-calendar-body"></div></details>';
       state.cardHost = root.querySelector('.aiu-card-host'); state.calendarBody = root.querySelector('.aiu-calendar-body');
       state.nearest = root.querySelector('.aiu-nearest'); state.nearestTime = root.querySelector('.aiu-nearest-time');
-      state.nearestLabel = root.querySelector('.aiu-nearest-label'); root.querySelector('.aiu-calendar').open = state.folds.schedule;
+      state.nearestLabel = root.querySelector('.aiu-nearest-label'); state.nearestRemain = root.querySelector('.aiu-nearest-remain');
+      root.querySelector('.aiu-calendar').open = state.folds.schedule;
       root.addEventListener('click', function (ev) {
         var summary = ev.target.closest('summary');
         if (summary && summary.parentElement.hasAttribute('data-aiu-fold')) {
