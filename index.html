@@ -280,7 +280,7 @@ var AIUsageUI = (function () {
   function limitHtml(l, main, now) {
     var p = percent(l.percent), t = tone(p), reset = shortTime(l.resets_at), left = remain(Date.parse(l.resets_at), now);
     if (left && shortWindow(l)) left.urgent = false;
-    var status = p === null ? '확인 안 됨' : p >= 100 ? '한도 도달' : p >= 80 ? '사용량 높음' : '';
+    var status = p === null ? '확인 안 됨' : p >= 100 ? '한도 도달' : '';
     var out = '<div class="aiu-limit ' + (main ? 'aiu-primary ' : 'aiu-secondary ') + 'aiu-state-' + t + '">';
     out += '<div class="aiu-limit-head"><span>' + esc(l.name || '사용 한도') + '</span>';
     if (main) {
