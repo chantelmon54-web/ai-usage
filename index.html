@@ -416,6 +416,10 @@ var AIUsageUI = (function () {
       accountSlots.forEach(function (s) {
         out += '<article class="aiu-card"><div class="aiu-card-head"><h4>' + esc(s.tool_name || s.tool || '') +
           '</h4><span class="aiu-plan">' + esc(s.plan || '') + '</span></div>';
+        if (isCodex(s) && s.relogin_needed_since) {
+          out += '<div class="aiu-relogin aiu-stale" role="status">재로그인 필요' +
+            (shortTime(s.relogin_needed_since) ? ' · ' + esc(shortTime(s.relogin_needed_since)) + '부터' : '') + '</div>';
+        }
         if (!s.ok && !s.stale) {
           out += '<div class="aiu-missing">—</div><div class="aiu-err">조회 실패 — ' + esc(s.error || '다음 수집을 기다립니다') + '</div>';
         } else {
